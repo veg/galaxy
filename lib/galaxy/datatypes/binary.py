@@ -192,7 +192,7 @@ class BamNative(Binary):
     """Class describing a BAM binary file that is not necessarily sorted"""
     edam_format = "format_2572"
     edam_data = "data_0863"
-    file_ext = "bam_native"
+    file_ext = "unsorted.bam"
     sort_flag = None
 
     MetadataElement(name="bam_index", desc="BAM Index File", param=metadata.FileParameter, file_ext="bai", readonly=True, no_value=None, visible=False, optional=True)
@@ -498,6 +498,10 @@ class BamInputSorted(BamNative):
     or ordered by their queryname.
     This notaby keeps alignments produced by paired end sequencing adjacent.
     """
+
+    def sniff(self, file_name):
+        # We never want to sniff to this datatype
+        return False
 
     def dataset_content_needs_grooming(self, file_name):
         """
