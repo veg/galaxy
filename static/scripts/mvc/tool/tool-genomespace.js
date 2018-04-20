@@ -1,2 +1,26 @@
-define("mvc/tool/tool-genomespace",["exports"],function(e){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.default={openFileBrowser:function(e){var o=window.Galaxy.config.genomespace_ui_url+"upload/loadUrlToGenomespace.html?getLocation=true",a=window.open(o,"GenomeSpace File Browser","height=360px,width=600px");window.addEventListener("message",function(o){e.successCallback&&o.data.destination&&e.successCallback(o.data)},!1),a.focus(),null!=e.errorCallback&&(a.setCallbackOnGSUploadError=config.errorCallback)}}});
+define("mvc/tool/tool-genomespace", ["exports"], function(exports) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+    exports.default = {
+        openFileBrowser: function openFileBrowser(options) {
+            var GS_UI_URL = window.Galaxy.config.genomespace_ui_url;
+            var GS_UPLOAD_URL = GS_UI_URL + "upload/loadUrlToGenomespace.html?getLocation=true";
+
+            var newWin = window.open(GS_UPLOAD_URL, "GenomeSpace File Browser", "height=360px,width=600px");
+
+            window.addEventListener("message", function(e) {
+                if (options.successCallback && e.data.destination) {
+                    options.successCallback(e.data);
+                }
+            }, false);
+
+            newWin.focus();
+
+            if (options["errorCallback"] != null) newWin.setCallbackOnGSUploadError = config["errorCallback"];
+        }
+    };
+});
 //# sourceMappingURL=../../../maps/mvc/tool/tool-genomespace.js.map

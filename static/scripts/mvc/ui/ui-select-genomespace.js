@@ -1,2 +1,94 @@
-define("mvc/ui/ui-select-genomespace",["exports","utils/localization","utils/utils","mvc/ui/ui-misc","mvc/tool/tool-genomespace"],function(e,t,i,n,s){"use strict";function o(e){return e&&e.__esModule?e:{default:e}}Object.defineProperty(e,"__esModule",{value:!0});var u=o(t),a=(o(i),o(n)),l=o(s),c=Backbone.View.extend({initialize:function(e){var t=this;this.options=e,this.browse_button=new a.default.ButtonIcon({title:(0,u.default)("Browse"),icon:"fa fa-sign-in",tooltip:(0,u.default)("Browse GenomeSpace"),onclick:function(){t.browseGenomeSpace(e)}}),this.filename_textbox=new a.default.Input,this.setElement(this._template(e)),this.$(".ui-gs-browse-button").append(this.browse_button.$el),this.$(".ui-gs-filename-textbox").append(this.filename_textbox.$el)},browseGenomeSpace:function(e){var t=this;l.default.openFileBrowser({successCallback:function(e){t.value(e.destination)}})},_template:function(e){return'<div class="ui-gs-select-file"><div class="ui-gs-browse-field"><span class="ui-gs-browse-button" /><span class="ui-gs-filename-textbox" /></div></div>'},value:function(e){if(void 0===e)return this._getValue();this._setValue(e)},_getValue:function(){return this.filename_textbox.value()},_setValue:function(e){e&&this.filename_textbox.value(e),this.options.onchange&&this.options.onchange(e)}});e.default={View:c}});
+define("mvc/ui/ui-select-genomespace", ["exports", "utils/localization", "utils/utils", "mvc/ui/ui-misc", "mvc/tool/tool-genomespace"], function(exports, _localization, _utils, _uiMisc, _toolGenomespace) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var _localization2 = _interopRequireDefault(_localization);
+
+    var _utils2 = _interopRequireDefault(_utils);
+
+    var _uiMisc2 = _interopRequireDefault(_uiMisc);
+
+    var _toolGenomespace2 = _interopRequireDefault(_toolGenomespace);
+
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
+
+    /**
+     * GenomeSpace file selector
+     */
+    var View = Backbone.View.extend({
+        // initialize
+        initialize: function initialize(options) {
+            // link this
+            var self = this;
+            this.options = options;
+
+            // create insert new list element button
+            this.browse_button = new _uiMisc2.default.ButtonIcon({
+                title: (0, _localization2.default)("Browse"),
+                icon: "fa fa-sign-in",
+                tooltip: (0, _localization2.default)("Browse GenomeSpace"),
+                onclick: function onclick() {
+                    self.browseGenomeSpace(options);
+                }
+            });
+
+            // create genomespace filepath textbox
+            this.filename_textbox = new _uiMisc2.default.Input();
+
+            // create elements
+            this.setElement(this._template(options));
+            this.$(".ui-gs-browse-button").append(this.browse_button.$el);
+            this.$(".ui-gs-filename-textbox").append(this.filename_textbox.$el);
+        },
+
+        /** Browse GenomeSpace */
+        browseGenomeSpace: function browseGenomeSpace(options) {
+            var self = this;
+            _toolGenomespace2.default.openFileBrowser({
+                successCallback: function successCallback(data) {
+                    self.value(data.destination);
+                }
+            });
+        },
+
+        /** Main Template */
+        _template: function _template(options) {
+            return '<div class="ui-gs-select-file">' + '<div class="ui-gs-browse-field">' + '<span class="ui-gs-browse-button" />' + '<span class="ui-gs-filename-textbox" />' + "</div>" + "</div>";
+        },
+
+        /** Return/Set currently selected genomespace filename */
+        value: function value(new_value) {
+            // check if new_value is defined
+            if (new_value !== undefined) {
+                this._setValue(new_value);
+            } else {
+                return this._getValue();
+            }
+        },
+
+        // get value
+        _getValue: function _getValue() {
+            return this.filename_textbox.value();
+        },
+
+        // set value
+        _setValue: function _setValue(new_value) {
+            if (new_value) {
+                this.filename_textbox.value(new_value);
+            }
+            this.options.onchange && this.options.onchange(new_value);
+        }
+    });
+    // dependencies
+    exports.default = {
+        View: View
+    };
+});
 //# sourceMappingURL=../../../maps/mvc/ui/ui-select-genomespace.js.map

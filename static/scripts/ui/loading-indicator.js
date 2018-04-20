@@ -1,2 +1,110 @@
-define("ui/loading-indicator",["exports","jquery"],function(i,n){"use strict";function t(i,n){function t(){var t=['<div class="loading-indicator">','<div class="loading-indicator-text">','<span class="fa fa-spinner fa-spin fa-lg"></span>','<span class="loading-indicator-message">loading...</span>',"</div>","</div>"].join("\n"),e=a(t).hide().css(n.css||{position:"fixed"});e.children(".loading-indicator-text");return n.cover?(e.css({"z-index":2,top:i.css("top"),bottom:i.css("bottom"),left:i.css("left"),right:i.css("right"),opacity:.5,"background-color":"white","text-align":"center"}),e.children(".loading-indicator-text").css({"margin-top":"20px"})):e.children(".loading-indicator-text").css({margin:"12px 0px 0px 10px",opacity:"0.85",color:"grey"}).children(".loading-indicator-message").css({margin:"0px 8px 0px 0px","font-style":"italic"}),e}var o=this;return n=e.default.extend({cover:!1},n||{}),o.show=function(n,e,a){return n=n||"loading...",e=e||"fast",i.parent().find(".loading-indicator").remove(),o.$indicator=t().insertBefore(i),o.message(n),o.$indicator.fadeIn(e,a),o},o.message=function(i){o.$indicator.find("i").text(i)},o.hide=function(i,n){return i=i||"fast",o.$indicator&&o.$indicator.length?o.$indicator.fadeOut(i,function(){o.$indicator.remove(),n&&n()}):n&&n(),o},o}Object.defineProperty(i,"__esModule",{value:!0});var e=function(i){return i&&i.__esModule?i:{default:i}}(n),a=e.default;i.default={LoadingIndicator:t,markViewAsLoading:function(i){i.setElement(a('<div><div class="loading"></div></div>')),new t(i.$(".loading")).show()}}});
+define("ui/loading-indicator", ["exports", "jquery"], function(exports, _jquery) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var _jquery2 = _interopRequireDefault(_jquery);
+
+    function _interopRequireDefault(obj) {
+        return obj && obj.__esModule ? obj : {
+            default: obj
+        };
+    }
+
+    "use_strict";
+
+    var $ = _jquery2.default;
+    //TODO: too specific to history panel
+    function LoadingIndicator($where, options) {
+        var self = this;
+        // defaults
+        options = _jquery2.default.extend({
+            cover: false
+        }, options || {});
+
+        function render() {
+            var html = ['<div class="loading-indicator">', '<div class="loading-indicator-text">', '<span class="fa fa-spinner fa-spin fa-lg"></span>', '<span class="loading-indicator-message">loading...</span>', "</div>", "</div>"].join("\n");
+
+            var $indicator = $(html).hide().css(options.css || {
+                position: "fixed"
+            });
+
+            var $text = $indicator.children(".loading-indicator-text");
+
+            if (options.cover) {
+                $indicator.css({
+                    "z-index": 2,
+                    top: $where.css("top"),
+                    bottom: $where.css("bottom"),
+                    left: $where.css("left"),
+                    right: $where.css("right"),
+                    opacity: 0.5,
+                    "background-color": "white",
+                    "text-align": "center"
+                });
+                $text = $indicator.children(".loading-indicator-text").css({
+                    "margin-top": "20px"
+                });
+            } else {
+                $text = $indicator.children(".loading-indicator-text").css({
+                    margin: "12px 0px 0px 10px",
+                    opacity: "0.85",
+                    color: "grey"
+                });
+                $text.children(".loading-indicator-message").css({
+                    margin: "0px 8px 0px 0px",
+                    "font-style": "italic"
+                });
+            }
+            return $indicator;
+        }
+
+        self.show = function(msg, speed, callback) {
+            msg = msg || "loading...";
+            speed = speed || "fast";
+            // remove previous
+            $where.parent().find(".loading-indicator").remove();
+            // since position is fixed - we insert as sibling
+            self.$indicator = render().insertBefore($where);
+            self.message(msg);
+            self.$indicator.fadeIn(speed, callback);
+            return self;
+        };
+
+        self.message = function(msg) {
+            self.$indicator.find("i").text(msg);
+        };
+
+        self.hide = function(speed, callback) {
+            speed = speed || "fast";
+            if (self.$indicator && self.$indicator.length) {
+                self.$indicator.fadeOut(speed, function() {
+                    self.$indicator.remove();
+                    if (callback) {
+                        callback();
+                    }
+                });
+            } else {
+                if (callback) {
+                    callback();
+                }
+            }
+            return self;
+        };
+        return self;
+    }
+
+    var markViewAsLoading = function markViewAsLoading(view) {
+        view.setElement($('<div><div class="loading"></div></div>'));
+        new LoadingIndicator(view.$(".loading")).show();
+    };
+
+    //============================================================================
+    exports.default = {
+        LoadingIndicator: LoadingIndicator,
+        markViewAsLoading: markViewAsLoading
+    };
+});
 //# sourceMappingURL=../../maps/ui/loading-indicator.js.map

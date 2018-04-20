@@ -1,2 +1,1855 @@
-define("viz/trackster/painters",["exports","libs/underscore"],function(t,e){"use strict";function a(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}function i(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}function r(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}function n(t,e){var a=t[0],i=t[1],r=e[0],n=e[1];return a<r?i<=r?u:i<=n?c:_:a>n?p:i<=n?v:d}function l(t,e){var a=n(t,e);return a!==u&&a!==p}function s(t,e,a,i,r,n){void 0===n&&(n=4);var l,s=i-e,o=r-a,h=Math.floor(Math.sqrt(s*s+o*o)/n),f=s/h,u=o/h;for(l=0;l<h;l++,e+=f,a+=u)l%2==0&&t.fillRect(e,a,n,1)}function o(t,e,a,i){var r=e-i/2,n=e+i/2,l=a-Math.sqrt(3*i/2);t.beginPath(),t.moveTo(r,l),t.lineTo(n,l),t.lineTo(e,a),t.lineTo(r,l),t.strokeStyle=this.fillStyle,t.fill(),t.stroke(),t.closePath()}Object.defineProperty(t,"__esModule",{value:!0});var h=function(t){if(t&&t.__esModule)return t;var e={};if(null!=t)for(var a in t)Object.prototype.hasOwnProperty.call(t,a)&&(e[a]=t[a]);return e.default=t,e}(e),f=function(){function t(t,e){for(var a=0;a<e.length;a++){var i=e[a];i.enumerable=i.enumerable||!1,i.configurable=!0,"value"in i&&(i.writable=!0),Object.defineProperty(t,i.key,i)}}return function(e,a,i){return a&&t(e.prototype,a),i&&t(e,i),e}}(),u=1001,_=1002,c=1003,d=1004,v=1005,p=1006,g=function(){function t(e){r(this,t),this.default_val=e||1}return f(t,[{key:"gen_val",value:function(t){return this.default_val}}]),t}(),m=function t(e){r(this,t),this.incomplete_features=e.incomplete_features,this.feature_mapper=e.feature_mapper},y=function(){function t(e,a,i,n,l){r(this,t),this.data=e,this.default_prefs={},this.view_start=a,this.view_end=i,this.prefs=h.extend({},this.default_prefs,n),this.mode=l}return f(t,[{key:"draw",value:function(t,e,a,i){}},{key:"get_start_draw_pos",value:function(t,e){return this._chrom_pos_to_draw_pos(t,e,-.5)}},{key:"get_end_draw_pos",value:function(t,e){return this._chrom_pos_to_draw_pos(t,e,.5)}},{key:"get_draw_pos",value:function(t,e){return this._chrom_pos_to_draw_pos(t,e,0)}},{key:"_chrom_pos_to_draw_pos",value:function(t,e,a){return Math.floor(e*(Math.max(0,t-this.view_start)+a))}}],[{key:"default_prefs",get:function(){return{}}}]),t}(),w=function(t){function e(t,i,n,l,s){return r(this,e),a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,i,n,l,s))}return i(e,y),f(e,[{key:"draw",value:function(t,e,a,i){var r=!1,n=this.prefs.min_value,l=this.prefs.max_value,s=l-n,o=a,f=this.view_start,u=this.mode,_=this.data;t.save();var c=Math.round(a+n/s*a);"Intensity"!==u&&(t.fillStyle="#aaa",t.fillRect(0,c,e,1)),t.beginPath();var d,v,p;p=_.length>1?h.map(_.slice(0,-1),function(t,e){return Math.ceil((_[e+1][0]-_[e][0])*i)}):[10];for(var g,m=this.prefs.block_color||this.prefs.color,y=parseInt(m.slice(1),16),w=(16711680&y)>>16,b=(65280&y)>>8,M=255&y,k=!1,x=!1,S=0,P=_.length;S<P;S++)if(t.fillStyle=t.strokeStyle=m,k=x=!1,g=p[S],d=Math.floor((_[S][0]-f-.5)*i),null!==(v=_[S][1])){if(v<n?(x=!0,v=n):v>l&&(k=!0,v=l),"Histogram"===u)v=Math.round(v/s*o),t.fillRect(d,c,g,-v);else if("Intensity"===u){var O=(v-n)/s,R=Math.round(w+(255-w)*(1-O)),T=Math.round(b+(255-b)*(1-O)),A=Math.round(M+(255-M)*(1-O));t.fillStyle="rgb("+R+","+T+","+A+")",t.fillRect(d,0,g,o)}else v=Math.round(o-(v-n)/s*o),r?t.lineTo(d,v):(r=!0,"Filled"===u?(t.moveTo(d,o),t.lineTo(d,v)):t.moveTo(d,v));if(t.fillStyle=this.prefs.overflow_color,k||x){var F;"Histogram"===u||"Intensity"===u?F=g:(d-=2,F=4),k&&t.fillRect(d,0,F,3),x&&t.fillRect(d,o-3,F,3)}t.fillStyle=m}else r&&"Filled"===u&&t.lineTo(d,o),r=!1;"Filled"===u?(r&&(t.lineTo(d,c),t.lineTo(0,c)),t.fill()):t.stroke(),t.restore()}}],[{key:"default_prefs",get:function(){return{min_value:void 0,max_value:void 0,mode:"Histogram",color:"#000",overflow_color:"#F66"}}}]),e}(),b=function(){function t(e){r(this,t),this.feature_positions={},this.slot_height=e,this.translation=0,this.y_translation=0}return f(t,[{key:"map_feature_data",value:function(t,e,a,i){this.feature_positions[e]||(this.feature_positions[e]=[]),this.feature_positions[e].push({data:t,x_start:a,x_end:i})}},{key:"get_feature_data",value:function(t,e){var a,i=Math.floor((e-this.y_translation)/this.slot_height);if(!this.feature_positions[i])return null;t+=this.translation;for(var r=0;r<this.feature_positions[i].length;r++)if(a=this.feature_positions[i][r],t>=a.x_start&&t<=a.x_end)return a.data}}]),t}(),M=function(t){function e(t,i,n,l,s,o,h){r(this,e);var f=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,i,n,l,s));return f.alpha_scaler=o||new g,f.height_scaler=h||new g,f.max_label_length=200,f}return i(e,y),f(e,[{key:"get_required_height",value:function(t,e){var a=this.get_row_height(),i=a,r=this.mode;return"no_detail"!==r&&"Squish"!==r&&"Pack"!==r||(a=t*i),a+this.get_top_padding(e)}},{key:"get_top_padding",value:function(t){return 0}},{key:"draw",value:function(t,e,a,i,r){t.save(),t.fillStyle=this.prefs.block_color,t.textAlign="right";for(var n,l=this.get_row_height(),s=new b(l),o=[],h=0,f=this.data.length;h<f;h++){var u=this.data[h],_=u[0],c=u[1],d=u[2],v=r&&void 0!==r[_]?r[_].slot:null;("Dense"===this.mode||null!==v)&&c<this.view_end&&d>this.view_start&&(n=this.draw_element(t,this.mode,u,v,this.view_start,this.view_end,i,l,e),s.map_feature_data(u,v,n[0],n[1]),(c<this.view_start||d>this.view_end)&&o.push(u))}return t.restore(),s.y_translation=this.get_top_padding(e),new m({incomplete_features:o,feature_mapper:s})}},{key:"draw_element",value:function(t,e,a,i,r,n,l,s,o){return[0,0]}}],[{key:"default_prefs",get:function(){return{block_color:"#FFF",connector_color:"#FFF"}}}]),e}(),k=function(t){function e(t,i,n,l,s,o,h){r(this,e);var f=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,i,n,l,s,o,h));return f.draw_background_connector=!0,f.draw_individual_connectors=!1,f}return i(e,M),f(e,[{key:"get_row_height",value:function(){var t=this.mode;return"Dense"===t?10:"no_detail"===t?3:"Squish"===t?5:10}},{key:"draw_element",value:function(t,e,a,i,r,n,l,s,o){var h=a[1],f=a[2],u=a[3],_=a[4],c=Math.floor(Math.max(0,(h-r-.5)*l)),d=Math.ceil(Math.min(o,Math.max(0,(f-r-.5)*l))),v=c,p=d,g=("Dense"===e?0:0+i)*s+this.get_top_padding(o),m=null,y=null,w=_&&"+"!==_&&"."!==_?this.prefs.reverse_strand_color:this.prefs.block_color,b=this.prefs.label_color;if(t.globalAlpha=this.alpha_scaler.gen_val(a),"Dense"===e&&(i=1),"no_detail"===e)t.fillStyle=w,t.fillRect(c,g+5,d-c,1);else{var M=a[5],k=a[6],x=a[7],S=!0;M&&k&&(m=Math.floor(Math.max(0,(M-r)*l)),y=Math.ceil(Math.min(o,Math.max(0,(k-r)*l))));var P,O;if("Squish"===e?(P=1,O=3,S=!1):(P=5,O=9),x){var R,T;"Squish"===e||"Dense"===e?(R=g+Math.floor(1.5)+1,T=1):_?(R=g,T=O):(R+=2.5,T=1),this.draw_background_connector&&("Squish"===e||"Dense"===e?t.fillStyle="#ccc":_?"+"===_?t.fillStyle=t.canvas.manager.get_pattern("right_strand"):"-"===_&&(t.fillStyle=t.canvas.manager.get_pattern("left_strand")):t.fillStyle="#ccc",t.fillRect(c,R,d-c,T));for(var A=0,F=x.length;A<F;A++){var I,j,q=x[A],D=Math.floor(Math.max(0,(q[0]-r-.5)*l)),H=Math.ceil(Math.min(o,Math.max((q[1]-r-.5)*l)));if(!(D>H)){if(t.fillStyle=w,t.fillRect(D,g+(O-P)/2+1,H-D,P),void 0!==m&&k>M&&!(D>y||H<m)){var X=Math.max(D,m),L=Math.min(H,y);t.fillRect(X,g+1,L-X,O),1===x.length&&"Pack"===e&&("+"===_?t.fillStyle=t.canvas.manager.get_pattern("right_strand_inv"):"-"===_&&(t.fillStyle=t.canvas.manager.get_pattern("left_strand_inv")),X+14<L&&(X+=2,L-=2),t.fillRect(X,g+1,L-X,O))}this.draw_individual_connectors&&I&&this.draw_connector(t,I,j,D,H,g),I=D,j=H}}if("Pack"===e){t.globalAlpha=1,t.fillStyle="white";var N=this.height_scaler.gen_val(a),C=Math.ceil(O*N),E=Math.round((O-C)/2);1!==N&&(t.fillRect(c,R+1,d-c,E),t.fillRect(c,R+O-E+1,d-c,E))}}else t.fillStyle=w,t.fillRect(c,g+1,d-c,O),_&&S&&("+"===_?t.fillStyle=t.canvas.manager.get_pattern("right_strand_inv"):"-"===_&&(t.fillStyle=t.canvas.manager.get_pattern("left_strand_inv")),t.fillRect(c,g+1,d-c,O));t.globalAlpha=1,u&&"Pack"===e&&h>r&&(t.fillStyle=b,0===r&&c-t.measureText(u).width<0?(t.textAlign="left",t.fillText(u,d+2,g+8,this.max_label_length),p+=t.measureText(u).width+2):(t.textAlign="right",t.fillText(u,c-2,g+8,this.max_label_length),v-=t.measureText(u).width+2))}return t.globalAlpha=1,[v,p]}}]),e}(),x=function(t){function e(t,i,n,l,s,o,h,f,u){r(this,e);var _=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,i,n,l,s,o,h));return _.ref_seq=f?f.data:null,_.base_color_fn=u,_}return i(e,M),f(e,[{key:"get_row_height",value:function(){var t,e=this.mode;return"Dense"===e?t=10:"Squish"===e?t=5:(t=10,this.prefs.show_insertions&&(t*=2)),t}},{key:"_parse_cigar",value:function(t){var e=[[0,0]],a=e[0],i=0,r=h.map(t.match(/[0-9]+[MIDNSHP=X]/g),function(t){var r=parseInt(t.slice(0,-1),10),n=t.slice(-1);return"N"===n?0!==a[1]&&(a=[i+r,i+r],e.push(a)):-1==="ISHP".indexOf(n)&&(a[1]+=r,i+=r),["MIDNSHP=X".indexOf(n),r]});return{blocks:e,cigar:r}}},{key:"draw_read",value:function(t,e,a,i,r,s,h,f,u,p){var g=function(t){return Math.floor(Math.max(0,(t-r-.5)*a))};t.textAlign="center";var m,y,w=[r,s],b=0,M=0,k=Math.round(a/2),x=t.canvas.manager.char_width_px,S="+"===u?this.prefs.detail_block_color:this.prefs.reverse_strand_color,P="Pack"===e,O=P?9:3,R=i+1,T=new A(t,O,a,e),F=[],I=[],j=this._parse_cigar(f);f=j.cigar,F=j.blocks;for(var q=0;q<F.length;q++){var D=F[q];l([h+D[0],h+D[1]],w)&&((m=g(h+D[0]))===(y=g(h+D[1]))&&(y+=1),t.fillStyle=S,t.fillRect(m,R,y-m,O))}for(var H=0,X=f.length;H<X;H++){var L=f[H],N="MIDNSHP=X"[L[0]],C=L[1],E=h+b;if(m=g(E),y=g(E+C),l([E,E+C],w))switch(m===y&&(y+=1),N){case"H":case"S":case"P":break;case"M":b+=C;break;case"=":case"X":var z="";"X"===N?z=p.slice(M,M+C):this.ref_seq&&(z=this.ref_seq.slice(Math.max(0,E-r),Math.min(E-r+C,s-r)));for(var B=Math.max(E,r),G=0;G<z.length;G++)if(z&&!this.prefs.show_differences||"X"===N){var V=Math.floor(Math.max(0,(B+G-r)*a));t.fillStyle=this.base_color_fn(z[G]),P&&a>x?t.fillText(z[G],V,i+9):a>.05&&t.fillRect(V-k,R,Math.max(1,Math.round(a)),O)}"X"===N&&(M+=C),b+=C;break;case"N":t.fillStyle="#ccc",t.fillRect(m,R+(O-1)/2,y-m,1),b+=C;break;case"D":T.draw_deletion(m,R,C),b+=C;break;case"I":var J=m-k;if(l([E,E+C],w)){var K=p.slice(M,M+C);if(this.prefs.show_insertions){var Q=m-(y-m)/2;if(("Pack"===e||"Auto"===this.mode)&&void 0!==p&&a>x){switch(t.fillStyle="yellow",t.fillRect(Q-k,i-9,y-m,9),I[I.length]={type:"triangle",data:[J,i+4,5]},t.fillStyle="#ccc",n([E,E+C],w)){case c:K=K.slice(r-E);break;case d:K=K.slice(0,E-s);break;case v:break;case _:K=K.slice(r-E,E-s)}for(var U=0,W=K.length;U<W;U++){var Y=Math.floor(Math.max(0,(E+U-r)*a));t.fillText(K[U],Y-(y-m)/2,i)}}else t.fillStyle="yellow",t.fillRect(Q,i+("Dense"!==this.mode?2:5),y-m,"Dense"!==e?3:9)}else("Pack"===e||"Auto"===this.mode)&&void 0!==p&&a>x&&I.push({type:"text",data:[K.length,J,i+9]})}M+=C}else b=function(t,e,a){return-1!=="M=NXD".indexOf(e)&&(t+=a),t}(b,N,C),M=function(t,e,a){return-1!=="IX".indexOf(e)&&(t+=a),t}(M,N,C)}t.fillStyle="yellow";for(var Z,$,tt,et=0;et<I.length;et++)$=(Z=I[et]).type,tt=Z.data,"text"===$?(t.save(),t.font="bold "+t.font,t.fillText(tt[0],tt[1],tt[2]),t.restore()):"triangle"===$&&o(t,tt[0],tt[1],tt[2])}},{key:"draw_element",value:function(t,e,a,i,r,n,l,o,h){var f=a[1],u=a[2],_=a[3],c=Math.floor(Math.max(-.5*l,(f-r-.5)*l)),d=Math.ceil(Math.min(h,Math.max(0,(u-r-.5)*l))),v=("Dense"===e?0:0+i)*o,p="Pack"===e?9:3;if(a[5]instanceof Array){var g=!0;a[4][1]>=r&&a[4][0]<=n&&a[4][2]?this.draw_read(t,e,l,v,r,n,a[4][0],a[4][2],a[4][3],a[4][4]):g=!1,a[5][1]>=r&&a[5][0]<=n&&a[5][2]?this.draw_read(t,e,l,v,r,n,a[5][0],a[5][2],a[5][3],a[5][4]):g=!1;var m=Math.ceil(Math.min(h,Math.max(-.5*l,(a[4][1]-r-.5)*l))),y=Math.floor(Math.max(-.5*l,(a[5][0]-r-.5)*l));if(g&&y>m){t.fillStyle="#ccc";var w=v+1+(p-1)/2;s(t,m,w,y,w)}}else this.draw_read(t,e,l,v,r,n,f,a[4],a[5],a[6]);return"Pack"===e&&f>=r&&"."!==_&&(t.fillStyle=this.prefs.label_color,0===r&&c-t.measureText(_).width<0?(t.textAlign="left",t.fillText(_,d+2,v+9,this.max_label_length)):(t.textAlign="right",t.fillText(_,c-2,v+9,this.max_label_length))),[0,0]}}]),e}(),S=function(t){function e(t,i,n,l,s,o,h){r(this,e);var f=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,i,n,l,s,o,h));return f.longest_feature_length=f.calculate_longest_feature_length(),f.draw_background_connector=!1,f.draw_individual_connectors=!0,f}return i(e,k),f(e,[{key:"calculate_longest_feature_length",value:function(){for(var t=0,e=0,a=this.data.length;e<a;e++){var i=this.data[e],r=i[1],n=i[2];t=Math.max(t,n-r)}return t}},{key:"get_top_padding",value:function(t){var e=t/(this.view_end-this.view_start);return Math.min(128,Math.ceil(this.longest_feature_length/2*e))}},{key:"draw_connector",value:function(t,e,a,i,r,n){var l=(a+i)/2;i-l>0&&(t.beginPath(),t.arc(l,n,i-l,Math.PI,0),t.stroke())}}]),e}(),P=function(){function t(e,a){r(this,t),Array.isArray(e)?this.rgb=e:6==e.length?this.rgb=e.match(/.{2}/g).map(function(t){return parseInt(t,16)}):7==e.length?this.rgb=e.substring(1,7).match(/.{2}/g).map(function(t){return parseInt(t,16)}):this.rgb=e.split("").map(function(t){return parseInt(t+t,16)}),this.alpha="number"==typeof a?a:1}return f(t,[{key:"eval",value:function(){return this}},{key:"toCSS",value:function(){return this.alpha<1?"rgba("+this.rgb.map(function(t){return Math.round(t)}).concat(this.alpha).join(", ")+")":"#"+this.rgb.map(function(t){return t=Math.round(t),1===(t=(t>255?255:t<0?0:t).toString(16)).length?"0"+t:t}).join("")}},{key:"toHSL",value:function(){var t,e,a=this.rgb[0]/255,i=this.rgb[1]/255,r=this.rgb[2]/255,n=this.alpha,l=Math.max(a,i,r),s=Math.min(a,i,r),o=(l+s)/2,h=l-s;if(l===s)t=e=0;else{switch(e=o>.5?h/(2-l-s):h/(l+s),l){case a:t=(i-r)/h+(i<r?6:0);break;case i:t=(r-a)/h+2;break;case r:t=(a-i)/h+4}t/=6}return{h:360*t,s:e,l:o,a:n}}},{key:"toARGB",value:function(){return"#"+[Math.round(255*this.alpha)].concat(this.rgb).map(function(t){return t=Math.round(t),1===(t=(t>255?255:t<0?0:t).toString(16)).length?"0"+t:t}).join("")}},{key:"mix",value:function(e,a){var i=this,r=a,n=2*r-1,l=i.toHSL().a-e.toHSL().a,s=((n*l==-1?n:(n+l)/(1+n*l))+1)/2,o=1-s;return new t([i.rgb[0]*s+e.rgb[0]*o,i.rgb[1]*s+e.rgb[1]*o,i.rgb[2]*s+e.rgb[2]*o],i.alpha*r+e.alpha*(1-r))}}]),t}(),O=function(){function t(e,a,i,n){r(this,t),this.start_color=new P(e),this.end_color=new P(a),this.start_value=i,this.end_value=n,this.value_range=n-i}return f(t,[{key:"map_value",value:function(t){return t=Math.max(t,this.start_value),t=Math.min(t,this.end_value),t=(t-this.start_value)/this.value_range,this.start_color.mix(this.end_color,1-t).toCSS()}}]),t}(),R=function(){function t(e,a,i,n,l){r(this,t),this.positive_ramp=new O(a,i,0,l),this.negative_ramp=new O(a,e,0,-n),this.start_value=n,this.end_value=l}return f(t,[{key:"map_value",value:function(t){return t=Math.max(t,this.start_value),(t=Math.min(t,this.end_value))>=0?this.positive_ramp.map_value(t):this.negative_ramp.map_value(-t)}}]),t}(),T=function(t){function e(t,i,n,l,s){r(this,e);var o,h,f=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,i,n,l,s));if(void 0===f.prefs.min_value){var u=1/0;for(o=0,h=f.data.length;o<h;o++)u=Math.min(u,f.data[o][6]);f.prefs.min_value=u}if(void 0===f.prefs.max_value){var _=-1/0;for(o=0,h=f.data.length;o<h;o++)_=Math.max(_,f.data[o][6]);f.prefs.max_value=_}return f}return i(e,y),f(e,[{key:"draw",value:function(t,e,a,i){var r,n,l,s,o,h,f=this.prefs.min_value,u=this.prefs.max_value,_=this.view_start,c=1/Math.sqrt(2),d=new R(this.prefs.neg_color,"#FFFFFF",this.prefs.pos_color,f,u),v=function(t){return(t-_)*i};t.save(),t.rotate(-45*Math.PI/180),t.scale(c,c);for(var p=0,g=this.data.length;p<g;p++)n=v((r=this.data[p])[1]),l=v(r[2]),s=v(r[4]),o=v(r[5]),h=r[6],t.fillStyle=d.map_value(h),t.fillRect(n,s,l-n,o-s);t.restore()}}],[{key:"default_prefs",get:function(){return{min_value:void 0,max_value:void 0,mode:"Heatmap",pos_color:"#FF8C00",neg_color:"#4169E1"}}}]),e}(),A=function(){function t(e,a,i,n){r(this,t),this.ctx=e,this.row_height=a,this.px_per_base=i,this.draw_details=("Pack"===n||"Auto"===n)&&i>=e.canvas.manager.char_width_px,this.delete_details_thickness=.2}return f(t,[{key:"draw_deletion",value:function(t,e,a){this.ctx.fillStyle="black";var i=(this.draw_details?this.delete_details_thickness:1)*this.row_height;e+=.5*(this.row_height-i),this.ctx.fillRect(t,e,a*this.px_per_base,i)}}]),t}(),F=function(t){function e(t,i,n,l,s,o){r(this,e);var h=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,i,n,l,s));return h.base_color_fn=o,h.divider_height=1,h}return i(e,y),f(e,[{key:"get_row_height",value:function(){var t=this.mode;return"Dense"===t?10:"Squish"===t?5:10}},{key:"get_required_height",value:function(t){var e=this.prefs.summary_height;return t>1&&this.prefs.show_sample_data&&(e+=this.divider_height+t*this.get_row_height()),e}},{key:"draw",value:function(t,e,a,i){t.save();var r,n,l,s,o,f,u,_,c,d,v,p=function(t,e){var a=t.length,i=e.length,r=0,n=1,l=null;return"-"===e?(l="deletion",n=t.length):0===t.indexOf(e)&&a>i?(l="deletion",n=a-i,r=i):0===e.indexOf(t)&&a<i&&(l="insertion",n=i-a,r=i),null!==l?{type:l,start:r,len:n}:{}},g=Math.max(1,Math.floor(i)),m=this.data.length?this.data[0][7].split(",").length:0,y="Squish"===this.mode?5:10,w=i<.1?y:"Squish"===this.mode?3:9,b=!0,M=new A(t,y,i,this.mode);1===m&&(y=w=i<t.canvas.manager.char_width_px?this.prefs.summary_height:y,M.row_height=y,b=!1),this.prefs.show_sample_data&&b&&(t.fillStyle="#F3F3F3",t.globalAlpha=1,t.fillRect(0,this.prefs.summary_height-this.divider_height,e,this.divider_height)),t.textAlign="center";for(var k=0;k<this.data.length;k++)if(r=this.data[k],n=r[1],l=r[3],s=[r[4].split(",")],o=r[7].split(","),f=r.slice(8),s=h.map(h.flatten(s),function(t){var e={type:"snp",value:t,start:0},a=p(l,t);return h.extend(e,a)}),!(n<this.view_start||n>this.view_end)){if(b)for(t.fillStyle="#999999",t.globalAlpha=1,v=0;v<s.length;v++)for(_=this.get_start_draw_pos(n+s[v].start,i),t.fillRect(_,0,g,this.prefs.summary_height),c=this.prefs.summary_height,v=0;v<s.length;v++){t.fillStyle="deletion"===s[v].type?"black":this.base_color_fn(s[v].value);var x=f/o.length,S=Math.ceil(this.prefs.summary_height*x);t.fillRect(_,c-S,g,S),c-=S}if(this.prefs.show_sample_data)for(c=b?this.prefs.summary_height+this.divider_height:0,v=0;v<o.length;v++,c+=y)if(d=o[v]?o[v].split(/\/|\|/):["0","0"],u=null,d[0]===d[1]?"."===d[0]||"0"!==d[0]&&(u=s[parseInt(d[0],10)-1],t.globalAlpha=1):(u="0"!==d[0]?d[0]:d[1],u=s[parseInt(u,10)-1],t.globalAlpha=.5),u)if(_=this.get_start_draw_pos(n+u.start,i),"snp"===u.type){var P=u.value;t.fillStyle=this.base_color_fn(P),M.draw_details?t.fillText(P,this.get_draw_pos(n,i),c+y):t.fillRect(_,c+1,g,w)}else"deletion"===u.type&&M.draw_deletion(_,c+1,u.len)}t.restore()}}]),e}();t.default={Scaler:g,LinePainter:w,LinkedFeaturePainter:k,ReadPainter:x,ArcLinkedFeaturePainter:S,DiagonalHeatmapPainter:T,VariantPainter:F}});
+define("viz/trackster/painters", ["exports", "libs/underscore"], function(exports, _underscore) {
+    "use strict";
+
+    Object.defineProperty(exports, "__esModule", {
+        value: true
+    });
+
+    var _ = _interopRequireWildcard(_underscore);
+
+    function _interopRequireWildcard(obj) {
+        if (obj && obj.__esModule) {
+            return obj;
+        } else {
+            var newObj = {};
+
+            if (obj != null) {
+                for (var key in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+                }
+            }
+
+            newObj.default = obj;
+            return newObj;
+        }
+    }
+
+    function _possibleConstructorReturn(self, call) {
+        if (!self) {
+            throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+        }
+
+        return call && (typeof call === "object" || typeof call === "function") ? call : self;
+    }
+
+    function _inherits(subClass, superClass) {
+        if (typeof superClass !== "function" && superClass !== null) {
+            throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+        }
+
+        subClass.prototype = Object.create(superClass && superClass.prototype, {
+            constructor: {
+                value: subClass,
+                enumerable: false,
+                writable: true,
+                configurable: true
+            }
+        });
+        if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+    }
+
+    function _classCallCheck(instance, Constructor) {
+        if (!(instance instanceof Constructor)) {
+            throw new TypeError("Cannot call a class as a function");
+        }
+    }
+
+    var _createClass = function() {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || false;
+                descriptor.configurable = true;
+                if ("value" in descriptor) descriptor.writable = true;
+                Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+
+        return function(Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+        };
+    }();
+
+    // Constants specific to feature tracks moved here (HACKING, these should
+    // basically all be configuration options)
+    var BEFORE = 1001;
+    var CONTAINS = 1002;
+    var OVERLAP_START = 1003;
+    var OVERLAP_END = 1004;
+    var CONTAINED_BY = 1005;
+    var AFTER = 1006;
+
+    var DENSE_TRACK_HEIGHT = 10;
+    var NO_DETAIL_TRACK_HEIGHT = 3;
+    var SQUISH_TRACK_HEIGHT = 5;
+    var PACK_TRACK_HEIGHT = 10;
+    var NO_DETAIL_FEATURE_HEIGHT = 1;
+    var DENSE_FEATURE_HEIGHT = 9;
+    var SQUISH_FEATURE_HEIGHT = 3;
+    var PACK_FEATURE_HEIGHT = 9;
+    var LABEL_SPACING = 2;
+    var CONNECTOR_COLOR = "#ccc";
+
+    /**
+     * Compute the type of overlap between two regions. They are assumed to be on the same chrom/contig.
+     * The overlap is computed relative to the second region; hence, OVERLAP_START indicates that the first
+     * region overlaps the start (but not the end) of the second region.
+     * NOTE: Coordinates are assumed to be in BED format: half open (start is closed, end is open).
+     */
+    function compute_overlap(first_region, second_region) {
+        var first_start = first_region[0];
+        var first_end = first_region[1];
+        var second_start = second_region[0];
+        var second_end = second_region[1];
+        var overlap;
+        if (first_start < second_start) {
+            if (first_end <= second_start) {
+                overlap = BEFORE;
+            } else if (first_end <= second_end) {
+                overlap = OVERLAP_START;
+            } else {
+                // first_end > second_end
+                overlap = CONTAINS;
+            }
+        } else {
+            // first_start >= second_start
+            if (first_start > second_end) {
+                overlap = AFTER;
+            } else if (first_end <= second_end) {
+                overlap = CONTAINED_BY;
+            } else {
+                overlap = OVERLAP_END;
+            }
+        }
+        return overlap;
+    }
+
+    /**
+     * Returns true if regions overlap.
+     */
+    function is_overlap(first_region, second_region) {
+        var overlap = compute_overlap(first_region, second_region);
+        return overlap !== BEFORE && overlap !== AFTER;
+    }
+
+    /**
+     * Draw a dashed line on a canvas using filled rectangles. This function is based on:
+     * http://vetruvet.blogspot.com/2010/10/drawing-dashed-lines-on-html5-canvas.html
+     * However, that approach uses lines, which don't seem to render as well, so use
+     * rectangles instead.
+     */
+    function dashedLine(ctx, x1, y1, x2, y2, dashLen) {
+        if (dashLen === undefined) {
+            dashLen = 4;
+        }
+        var dX = x2 - x1;
+        var dY = y2 - y1;
+        var dashes = Math.floor(Math.sqrt(dX * dX + dY * dY) / dashLen);
+        var dashX = dX / dashes;
+        var dashY = dY / dashes;
+        var q;
+
+        for (q = 0; q < dashes; q++, x1 += dashX, y1 += dashY) {
+            if (q % 2 !== 0) {
+                continue;
+            }
+            ctx.fillRect(x1, y1, dashLen, 1);
+        }
+    }
+
+    /**
+     * Draw an isosceles triangle that points down.
+     */
+    function drawDownwardEquilateralTriangle(ctx, down_vertex_x, down_vertex_y, side_len) {
+        // Compute other two points of triangle.
+        var x1 = down_vertex_x - side_len / 2;
+
+        var x2 = down_vertex_x + side_len / 2;
+        var y = down_vertex_y - Math.sqrt(side_len * 3 / 2);
+
+        // Draw and fill.
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.lineTo(down_vertex_x, down_vertex_y);
+        ctx.lineTo(x1, y);
+
+        ctx.strokeStyle = this.fillStyle;
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    /**
+     * Base class for all scalers. Scalers produce values that are used to change (scale) drawing attributes.
+     */
+
+    var Scaler = function() {
+        function Scaler(default_val) {
+            _classCallCheck(this, Scaler);
+
+            this.default_val = default_val ? default_val : 1;
+        }
+
+        /**
+         * Produce a scaling value.
+         */
+
+
+        _createClass(Scaler, [{
+            key: "gen_val",
+            value: function gen_val(input) {
+                return this.default_val;
+            }
+        }]);
+
+        return Scaler;
+    }();
+
+    var DrawResults = function DrawResults(options) {
+        _classCallCheck(this, DrawResults);
+
+        this.incomplete_features = options.incomplete_features;
+        this.feature_mapper = options.feature_mapper;
+    };
+
+    var Painter = function() {
+        function Painter(data, view_start, view_end, prefs, mode) {
+            _classCallCheck(this, Painter);
+
+            // Data and data properties
+            this.data = data;
+            this.default_prefs = {};
+            // View
+            this.view_start = view_start;
+            this.view_end = view_end;
+            // Drawing prefs
+            this.prefs = _.extend({}, this.default_prefs, prefs);
+            this.mode = mode;
+        }
+
+        _createClass(Painter, [{
+            key: "draw",
+            value: function draw(ctx, width, height, w_scale) {}
+        }, {
+            key: "get_start_draw_pos",
+            value: function get_start_draw_pos(chrom_pos, w_scale) {
+                return this._chrom_pos_to_draw_pos(chrom_pos, w_scale, -0.5);
+            }
+        }, {
+            key: "get_end_draw_pos",
+            value: function get_end_draw_pos(chrom_pos, w_scale) {
+                return this._chrom_pos_to_draw_pos(chrom_pos, w_scale, 0.5);
+            }
+        }, {
+            key: "get_draw_pos",
+            value: function get_draw_pos(chrom_pos, w_scale) {
+                return this._chrom_pos_to_draw_pos(chrom_pos, w_scale, 0);
+            }
+        }, {
+            key: "_chrom_pos_to_draw_pos",
+            value: function _chrom_pos_to_draw_pos(chrom_pos, w_scale, offset) {
+                return Math.floor(w_scale * (Math.max(0, chrom_pos - this.view_start) + offset));
+            }
+        }], [{
+            key: "default_prefs",
+            get: function get() {
+                return {};
+            }
+        }]);
+
+        return Painter;
+    }();
+
+    var LinePainter = function(_Painter) {
+        _inherits(LinePainter, _Painter);
+
+        function LinePainter(data, view_start, view_end, prefs, mode) {
+            _classCallCheck(this, LinePainter);
+
+            return _possibleConstructorReturn(this, (LinePainter.__proto__ || Object.getPrototypeOf(LinePainter)).call(this, data, view_start, view_end, prefs, mode));
+        }
+
+        _createClass(LinePainter, [{
+            key: "draw",
+            value: function draw(ctx, width, height, w_scale) {
+                var in_path = false;
+                var min_value = this.prefs.min_value;
+                var max_value = this.prefs.max_value;
+                var vertical_range = max_value - min_value;
+                var height_px = height;
+                var view_start = this.view_start;
+                var mode = this.mode;
+                var data = this.data;
+
+                ctx.save();
+
+                // Pixel position of 0 on the y axis
+                var y_zero = Math.round(height + min_value / vertical_range * height);
+
+                // Horizontal line to denote x-axis
+                if (mode !== "Intensity") {
+                    ctx.fillStyle = "#aaa";
+                    ctx.fillRect(0, y_zero, width, 1);
+                }
+
+                ctx.beginPath();
+                var x_scaled;
+                var y;
+                var delta_x_pxs;
+                if (data.length > 1) {
+                    delta_x_pxs = _.map(data.slice(0, -1), function(d, i) {
+                        return Math.ceil((data[i + 1][0] - data[i][0]) * w_scale);
+                    });
+                } else {
+                    delta_x_pxs = [10];
+                }
+
+                // Painter color can be in either block_color (FeatureTrack) or color pref (LineTrack).
+                var painter_color = this.prefs.block_color || this.prefs.color;
+
+                var // Extract RGB from preference color.
+                    pref_color = parseInt(painter_color.slice(1), 16);
+                var pref_r = (pref_color & 0xff0000) >> 16;
+                var pref_g = (pref_color & 0x00ff00) >> 8;
+                var pref_b = pref_color & 0x0000ff;
+                var top_overflow = false;
+                var bot_overflow = false;
+
+                // Paint track.
+                var delta_x_px;
+                for (var i = 0, len = data.length; i < len; i++) {
+                    // Reset attributes for next point.
+                    ctx.fillStyle = ctx.strokeStyle = painter_color;
+                    top_overflow = bot_overflow = false;
+                    delta_x_px = delta_x_pxs[i];
+
+                    x_scaled = Math.floor((data[i][0] - view_start - 0.5) * w_scale);
+                    y = data[i][1];
+
+                    // Process Y (scaler) value.
+                    if (y === null) {
+                        if (in_path && mode === "Filled") {
+                            ctx.lineTo(x_scaled, height_px);
+                        }
+                        in_path = false;
+                        continue;
+                    }
+
+                    // Bound Y value by min, max.
+                    if (y < min_value) {
+                        bot_overflow = true;
+                        y = min_value;
+                    } else if (y > max_value) {
+                        top_overflow = true;
+                        y = max_value;
+                    }
+
+                    // Draw point.
+                    if (mode === "Histogram") {
+                        // y becomes the bar height in pixels, which is the negated for canvas coords
+                        y = Math.round(y / vertical_range * height_px);
+                        ctx.fillRect(x_scaled, y_zero, delta_x_px, -y);
+                    } else if (mode === "Intensity") {
+                        var saturation = (y - min_value) / vertical_range;
+
+                        var // Range is [pref_color, 255] where saturation = 0 --> 255 and saturation = 1 --> pref color
+                            new_r = Math.round(pref_r + (255 - pref_r) * (1 - saturation));
+
+                        var new_g = Math.round(pref_g + (255 - pref_g) * (1 - saturation));
+                        var new_b = Math.round(pref_b + (255 - pref_b) * (1 - saturation));
+                        ctx.fillStyle = "rgb(" + new_r + "," + new_g + "," + new_b + ")";
+                        ctx.fillRect(x_scaled, 0, delta_x_px, height_px);
+                    } else {
+                        // mode is Coverage/Line or Filled.
+
+                        // Scale Y value.
+                        y = Math.round(height_px - (y - min_value) / vertical_range * height_px);
+                        if (in_path) {
+                            ctx.lineTo(x_scaled, y);
+                        } else {
+                            in_path = true;
+                            if (mode === "Filled") {
+                                ctx.moveTo(x_scaled, height_px);
+                                ctx.lineTo(x_scaled, y);
+                            } else {
+                                ctx.moveTo(x_scaled, y);
+                                // Use this approach (note: same as for filled) to draw line from 0 to
+                                // first data point.
+                                //ctx.moveTo(x_scaled, height_px);
+                                //ctx.lineTo(x_scaled, y);
+                            }
+                        }
+                    }
+
+                    // Draw lines at boundaries if overflowing min or max
+                    ctx.fillStyle = this.prefs.overflow_color;
+                    if (top_overflow || bot_overflow) {
+                        var overflow_x;
+                        if (mode === "Histogram" || mode === "Intensity") {
+                            overflow_x = delta_x_px;
+                        } else {
+                            // Line and Filled, which are points
+                            x_scaled -= 2; // Move it over to the left so it's centered on the point
+                            overflow_x = 4;
+                        }
+                        if (top_overflow) {
+                            ctx.fillRect(x_scaled, 0, overflow_x, 3);
+                        }
+                        if (bot_overflow) {
+                            ctx.fillRect(x_scaled, height_px - 3, overflow_x, 3);
+                        }
+                    }
+                    ctx.fillStyle = painter_color;
+                }
+                if (mode === "Filled") {
+                    if (in_path) {
+                        ctx.lineTo(x_scaled, y_zero);
+                        ctx.lineTo(0, y_zero);
+                    }
+                    ctx.fill();
+                } else {
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }], [{
+            key: "default_prefs",
+            get: function get() {
+                return {
+                    min_value: undefined,
+                    max_value: undefined,
+                    mode: "Histogram",
+                    color: "#000",
+                    overflow_color: "#F66"
+                };
+            }
+        }]);
+
+        return LinePainter;
+    }(Painter);
+
+    var FeaturePositionMapper = function() {
+        function FeaturePositionMapper(slot_height) {
+            _classCallCheck(this, FeaturePositionMapper);
+
+            this.feature_positions = {};
+            this.slot_height = slot_height;
+            this.translation = 0;
+            this.y_translation = 0;
+        }
+
+        /**
+         * Map feature data to a position defined by <slot, x_start, x_end>.
+         */
+
+
+        _createClass(FeaturePositionMapper, [{
+            key: "map_feature_data",
+            value: function map_feature_data(feature_data, slot, x_start, x_end) {
+                if (!this.feature_positions[slot]) {
+                    this.feature_positions[slot] = [];
+                }
+                this.feature_positions[slot].push({
+                    data: feature_data,
+                    x_start: x_start,
+                    x_end: x_end
+                });
+            }
+        }, {
+            key: "get_feature_data",
+            value: function get_feature_data(x, y) {
+                // Find slot using Y.
+                var slot = Math.floor((y - this.y_translation) / this.slot_height);
+
+                var feature_dict;
+
+                // May not be over a slot due to padding, margin, etc.
+                if (!this.feature_positions[slot]) {
+                    return null;
+                }
+
+                // Find feature using X.
+                x += this.translation;
+                for (var i = 0; i < this.feature_positions[slot].length; i++) {
+                    feature_dict = this.feature_positions[slot][i];
+                    if (x >= feature_dict.x_start && x <= feature_dict.x_end) {
+                        return feature_dict.data;
+                    }
+                }
+            }
+        }]);
+
+        return FeaturePositionMapper;
+    }();
+
+    var FeaturePainter = function(_Painter2) {
+        _inherits(FeaturePainter, _Painter2);
+
+        function FeaturePainter(data, view_start, view_end, prefs, mode, alpha_scaler, height_scaler) {
+            _classCallCheck(this, FeaturePainter);
+
+            var _this2 = _possibleConstructorReturn(this, (FeaturePainter.__proto__ || Object.getPrototypeOf(FeaturePainter)).call(this, data, view_start, view_end, prefs, mode));
+
+            _this2.alpha_scaler = alpha_scaler ? alpha_scaler : new Scaler();
+            _this2.height_scaler = height_scaler ? height_scaler : new Scaler();
+            _this2.max_label_length = 200;
+            return _this2;
+        }
+
+        _createClass(FeaturePainter, [{
+            key: "get_required_height",
+            value: function get_required_height(rows_required, width) {
+                // y_scale is the height per row
+                var required_height = this.get_row_height();
+
+                var y_scale = required_height;
+                var mode = this.mode;
+                // If using a packing mode, need to multiply by the number of slots used
+                if (mode === "no_detail" || mode === "Squish" || mode === "Pack") {
+                    required_height = rows_required * y_scale;
+                }
+                return required_height + this.get_top_padding(width);
+            }
+        }, {
+            key: "get_top_padding",
+            value: function get_top_padding(width) {
+                return 0;
+            }
+        }, {
+            key: "draw",
+            value: function draw(ctx, width, height, w_scale, slots) {
+                ctx.save();
+                ctx.fillStyle = this.prefs.block_color;
+                ctx.textAlign = "right";
+
+                var y_scale = this.get_row_height();
+                var feature_mapper = new FeaturePositionMapper(y_scale);
+                var x_draw_coords;
+                var incomplete_features = [];
+
+                for (var i = 0, len = this.data.length; i < len; i++) {
+                    var feature = this.data[i];
+                    var feature_uid = feature[0];
+                    var feature_start = feature[1];
+                    var feature_end = feature[2];
+
+                    // Slot valid only if features are slotted and this feature is slotted;
+                    // feature may not be due to lack of space.
+                    var slot = slots && slots[feature_uid] !== undefined ? slots[feature_uid].slot : null;
+
+                    // Draw feature if (a) mode is dense or feature is slotted (as it must be for all non-dense modes) and
+                    // (b) there's overlap between the feature and drawing region.
+                    if ((this.mode === "Dense" || slot !== null) && feature_start < this.view_end && feature_end > this.view_start) {
+                        x_draw_coords = this.draw_element(ctx, this.mode, feature, slot, this.view_start, this.view_end, w_scale, y_scale, width);
+                        feature_mapper.map_feature_data(feature, slot, x_draw_coords[0], x_draw_coords[1]);
+
+                        // Add to incomplete features if it's not drawn completely in region.
+                        if (feature_start < this.view_start || feature_end > this.view_end) {
+                            incomplete_features.push(feature);
+                        }
+                    }
+                }
+
+                ctx.restore();
+
+                feature_mapper.y_translation = this.get_top_padding(width);
+                return new DrawResults({
+                    incomplete_features: incomplete_features,
+                    feature_mapper: feature_mapper
+                });
+            }
+        }, {
+            key: "draw_element",
+            value: function draw_element(ctx, mode, feature, slot, tile_low, tile_high, w_scale, y_scale, width) {
+                return [0, 0];
+            }
+        }], [{
+            key: "default_prefs",
+            get: function get() {
+                return {
+                    block_color: "#FFF",
+                    connector_color: "#FFF"
+                };
+            }
+        }]);
+
+        return FeaturePainter;
+    }(Painter);
+
+    var LinkedFeaturePainter = function(_FeaturePainter) {
+        _inherits(LinkedFeaturePainter, _FeaturePainter);
+
+        function LinkedFeaturePainter(data, view_start, view_end, prefs, mode, alpha_scaler, height_scaler) {
+            _classCallCheck(this, LinkedFeaturePainter);
+
+            var _this3 = _possibleConstructorReturn(this, (LinkedFeaturePainter.__proto__ || Object.getPrototypeOf(LinkedFeaturePainter)).call(this, data, view_start, view_end, prefs, mode, alpha_scaler, height_scaler));
+
+            // Whether to draw a single connector in the background that spans the entire feature (the intron fishbone)
+            _this3.draw_background_connector = true;
+            // Whether to call draw_connector for every pair of blocks
+            _this3.draw_individual_connectors = false;
+            return _this3;
+        }
+
+        /**
+         * Height of a single row, depends on mode
+         */
+
+
+        _createClass(LinkedFeaturePainter, [{
+            key: "get_row_height",
+            value: function get_row_height() {
+                var mode = this.mode;
+                var height;
+                if (mode === "Dense") {
+                    height = DENSE_TRACK_HEIGHT;
+                } else if (mode === "no_detail") {
+                    height = NO_DETAIL_TRACK_HEIGHT;
+                } else if (mode === "Squish") {
+                    height = SQUISH_TRACK_HEIGHT;
+                } else {
+                    // mode === "Pack"
+                    height = PACK_TRACK_HEIGHT;
+                }
+                return height;
+            }
+        }, {
+            key: "draw_element",
+            value: function draw_element(ctx, mode, feature, slot, tile_low, tile_high, w_scale, y_scale, width) {
+                // var feature_uid = feature[0];
+                var feature_start = feature[1];
+                var feature_end = feature[2];
+                var feature_name = feature[3];
+                var feature_strand = feature[4];
+                // -0.5 to offset region between bases.
+                var f_start = Math.floor(Math.max(0, (feature_start - tile_low - 0.5) * w_scale));
+                var f_end = Math.ceil(Math.min(width, Math.max(0, (feature_end - tile_low - 0.5) * w_scale)));
+                var draw_start = f_start;
+                var draw_end = f_end;
+                var y_start = (mode === "Dense" ? 0 : 0 + slot) * y_scale + this.get_top_padding(width);
+                var thick_start = null;
+                var thick_end = null;
+
+                // TODO: is there any reason why block, label color cannot be set at the Painter level?
+                // For now, assume '.' === '+'
+                var block_color = !feature_strand || feature_strand === "+" || feature_strand === "." ? this.prefs.block_color : this.prefs.reverse_strand_color;
+                var label_color = this.prefs.label_color;
+
+                // Set global alpha.
+                ctx.globalAlpha = this.alpha_scaler.gen_val(feature);
+
+                // In dense mode, put all data in top slot.
+                if (mode === "Dense") {
+                    slot = 1;
+                }
+
+                if (mode === "no_detail") {
+                    // No details for feature, so only one way to display.
+                    ctx.fillStyle = block_color;
+                    ctx.fillRect(f_start, y_start + 5, f_end - f_start, NO_DETAIL_FEATURE_HEIGHT);
+                } else {
+                    // Mode is either Squish or Pack:
+                    // Feature details.
+                    var feature_ts = feature[5];
+
+                    var feature_te = feature[6];
+                    var feature_blocks = feature[7];
+
+                    var // Whether we are drawing full height or squished features
+                        full_height = true;
+
+                    if (feature_ts && feature_te) {
+                        thick_start = Math.floor(Math.max(0, (feature_ts - tile_low) * w_scale));
+                        thick_end = Math.ceil(Math.min(width, Math.max(0, (feature_te - tile_low) * w_scale)));
+                    }
+
+                    // Set vars that depend on mode.
+                    var thin_height;
+
+                    var thick_height;
+                    if (mode === "Squish") {
+                        thin_height = 1;
+                        thick_height = SQUISH_FEATURE_HEIGHT;
+                        full_height = false;
+                    } else if (mode === "Dense") {
+                        thin_height = 5;
+                        thick_height = DENSE_FEATURE_HEIGHT;
+                    } else {
+                        // mode === "Pack"
+                        thin_height = 5;
+                        thick_height = PACK_FEATURE_HEIGHT;
+                    }
+
+                    // Draw feature/feature blocks + connectors.
+                    if (!feature_blocks) {
+                        // If there are no blocks, treat the feature as one big exon.
+                        ctx.fillStyle = block_color;
+                        ctx.fillRect(f_start, y_start + 1, f_end - f_start, thick_height);
+                        // If strand is specified, draw arrows over feature
+                        if (feature_strand && full_height) {
+                            if (feature_strand === "+") {
+                                ctx.fillStyle = ctx.canvas.manager.get_pattern("right_strand_inv");
+                            } else if (feature_strand === "-") {
+                                ctx.fillStyle = ctx.canvas.manager.get_pattern("left_strand_inv");
+                            }
+                            ctx.fillRect(f_start, y_start + 1, f_end - f_start, thick_height);
+                        }
+                    } else {
+                        //
+                        // There are feature blocks and mode is either Squish or Pack.
+                        //
+                        // Approach: (a) draw whole feature as connector/intron and (b) draw blocks as
+                        // needed. This ensures that whole feature, regardless of whether it starts with
+                        // a block, is visible.
+                        //
+
+                        // Compute y axis start position and height
+                        var cur_y_start;
+
+                        var cur_height;
+                        if (mode === "Squish" || mode === "Dense") {
+                            cur_y_start = y_start + Math.floor(SQUISH_FEATURE_HEIGHT / 2) + 1;
+                            cur_height = 1;
+                        } else {
+                            // mode === "Pack"
+                            if (feature_strand) {
+                                cur_y_start = y_start;
+                                cur_height = thick_height;
+                            } else {
+                                cur_y_start += SQUISH_FEATURE_HEIGHT / 2 + 1;
+                                cur_height = 1;
+                            }
+                        }
+
+                        // Draw whole feature as connector/intron.
+                        if (this.draw_background_connector) {
+                            if (mode === "Squish" || mode === "Dense") {
+                                ctx.fillStyle = CONNECTOR_COLOR;
+                            } else {
+                                // mode === "Pack"
+                                if (feature_strand) {
+                                    if (feature_strand === "+") {
+                                        ctx.fillStyle = ctx.canvas.manager.get_pattern("right_strand");
+                                    } else if (feature_strand === "-") {
+                                        ctx.fillStyle = ctx.canvas.manager.get_pattern("left_strand");
+                                    }
+                                } else {
+                                    ctx.fillStyle = CONNECTOR_COLOR;
+                                }
+                            }
+                            ctx.fillRect(f_start, cur_y_start, f_end - f_start, cur_height);
+                        }
+
+                        // Draw blocks.
+                        for (var k = 0, k_len = feature_blocks.length; k < k_len; k++) {
+                            var block = feature_blocks[k];
+
+                            var // -0.5 to offset block between bases.
+                                block_start = Math.floor(Math.max(0, (block[0] - tile_low - 0.5) * w_scale));
+
+                            var block_end = Math.ceil(Math.min(width, Math.max((block[1] - tile_low - 0.5) * w_scale)));
+
+                            var last_block_start;
+                            var last_block_end;
+
+                            // Skip drawing if block not on tile.
+                            if (block_start > block_end) {
+                                continue;
+                            }
+
+                            // Draw thin block.
+                            ctx.fillStyle = block_color;
+                            ctx.fillRect(block_start, y_start + (thick_height - thin_height) / 2 + 1, block_end - block_start, thin_height);
+
+                            // If block intersects with thick region, draw block as thick.
+                            // - No thick is sometimes encoded as thick_start == thick_end, so don't draw in that case
+                            if (thick_start !== undefined && feature_te > feature_ts && !(block_start > thick_end || block_end < thick_start)) {
+                                var block_thick_start = Math.max(block_start, thick_start);
+
+                                var block_thick_end = Math.min(block_end, thick_end);
+                                ctx.fillRect(block_thick_start, y_start + 1, block_thick_end - block_thick_start, thick_height);
+                                if (feature_blocks.length === 1 && mode === "Pack") {
+                                    // Exactly one block means we have no introns, but do have a distinct "thick" region,
+                                    // draw arrows over it if in pack mode.
+                                    if (feature_strand === "+") {
+                                        ctx.fillStyle = ctx.canvas.manager.get_pattern("right_strand_inv");
+                                    } else if (feature_strand === "-") {
+                                        ctx.fillStyle = ctx.canvas.manager.get_pattern("left_strand_inv");
+                                    }
+                                    // If region is wide enough in pixels, pad a bit
+                                    if (block_thick_start + 14 < block_thick_end) {
+                                        block_thick_start += 2;
+                                        block_thick_end -= 2;
+                                    }
+                                    ctx.fillRect(block_thick_start, y_start + 1, block_thick_end - block_thick_start, thick_height);
+                                }
+                            }
+                            // Draw individual connectors if required
+                            if (this.draw_individual_connectors && last_block_start) {
+                                this.draw_connector(ctx, last_block_start, last_block_end, block_start, block_end, y_start);
+                            }
+                            last_block_start = block_start;
+                            last_block_end = block_end;
+                        }
+
+                        // FIXME: Height scaling only works in Pack mode right now.
+                        if (mode === "Pack") {
+                            // Reset alpha so height scaling is not impacted by alpha scaling.
+                            ctx.globalAlpha = 1;
+
+                            // Height scaling: draw white lines to reduce height according to height scale factor.
+                            ctx.fillStyle = "white"; // TODO: set this to background color.
+                            var hscale_factor = this.height_scaler.gen_val(feature);
+
+                            var // Ceil ensures that min height is >= 1.
+                                new_height = Math.ceil(thick_height * hscale_factor);
+
+                            var ws_height = Math.round((thick_height - new_height) / 2);
+                            if (hscale_factor !== 1) {
+                                ctx.fillRect(f_start, cur_y_start + 1, f_end - f_start, ws_height);
+                                ctx.fillRect(f_start, cur_y_start + thick_height - ws_height + 1, f_end - f_start, ws_height);
+                            }
+                        }
+                    }
+
+                    // Reset alpha so that label is not transparent.
+                    ctx.globalAlpha = 1;
+
+                    // Draw label for Pack mode.
+                    if (feature_name && mode === "Pack" && feature_start > tile_low) {
+                        ctx.fillStyle = label_color;
+                        // FIXME: assumption here that the entire view starts at 0
+                        if (tile_low === 0 && f_start - ctx.measureText(feature_name).width < 0) {
+                            ctx.textAlign = "left";
+                            ctx.fillText(feature_name, f_end + LABEL_SPACING, y_start + 8, this.max_label_length);
+                            draw_end += ctx.measureText(feature_name).width + LABEL_SPACING;
+                        } else {
+                            ctx.textAlign = "right";
+                            ctx.fillText(feature_name, f_start - LABEL_SPACING, y_start + 8, this.max_label_length);
+                            draw_start -= ctx.measureText(feature_name).width + LABEL_SPACING;
+                        }
+                        //ctx.fillStyle = block_color;
+                    }
+                }
+
+                // Reset global alpha.
+                ctx.globalAlpha = 1;
+
+                return [draw_start, draw_end];
+            }
+        }]);
+
+        return LinkedFeaturePainter;
+    }(FeaturePainter);
+
+    var ReadPainter = function(_FeaturePainter2) {
+        _inherits(ReadPainter, _FeaturePainter2);
+
+        function ReadPainter(data, view_start, view_end, prefs, mode, alpha_scaler, height_scaler, ref_seq, base_color_fn) {
+            _classCallCheck(this, ReadPainter);
+
+            var _this4 = _possibleConstructorReturn(this, (ReadPainter.__proto__ || Object.getPrototypeOf(ReadPainter)).call(this, data, view_start, view_end, prefs, mode, alpha_scaler, height_scaler));
+
+            _this4.ref_seq = ref_seq ? ref_seq.data : null;
+            _this4.base_color_fn = base_color_fn;
+            return _this4;
+        }
+        /**
+         * Returns height based on mode.
+         */
+
+
+        _createClass(ReadPainter, [{
+            key: "get_row_height",
+            value: function get_row_height() {
+                var height;
+                var mode = this.mode;
+                if (mode === "Dense") {
+                    height = DENSE_TRACK_HEIGHT;
+                } else if (mode === "Squish") {
+                    height = SQUISH_TRACK_HEIGHT;
+                } else {
+                    // mode === "Pack"
+                    height = PACK_TRACK_HEIGHT;
+                    if (this.prefs.show_insertions) {
+                        height *= 2;
+                    }
+                }
+                return height;
+            }
+        }, {
+            key: "_parse_cigar",
+            value: function _parse_cigar(cigar_str) {
+                var cigar_ops = "MIDNSHP=X";
+
+                // Parse cigar.
+                var blocks = [
+                    [0, 0]
+                ];
+
+                var cur_block = blocks[0];
+                var base_pos = 0;
+
+                var // Parse cigar operations out and update/create blocks as needed.
+                    parsed_cigar = _.map(cigar_str.match(/[0-9]+[MIDNSHP=X]/g), function(op) {
+                        // Get operation length, character.
+                        var op_len = parseInt(op.slice(0, -1), 10),
+                            op_char = op.slice(-1);
+
+                        // Update drawing block.
+                        if (op_char === "N") {
+                            // At skip, so need to start new block if current block represents
+                            // drawing area.
+                            if (cur_block[1] !== 0) {
+                                cur_block = [base_pos + op_len, base_pos + op_len];
+                                blocks.push(cur_block);
+                            }
+                        } else if ("ISHP".indexOf(op_char) === -1) {
+                            // Operation is M,D,=,X.
+                            cur_block[1] += op_len;
+                            base_pos += op_len;
+                        }
+
+                        // Return parsed cigar.
+                        return [cigar_ops.indexOf(op_char), op_len];
+                    });
+
+                return {
+                    blocks: blocks,
+                    cigar: parsed_cigar
+                };
+            }
+        }, {
+            key: "draw_read",
+            value: function draw_read(ctx, mode, w_scale, y_start, tile_low, tile_high, feature_start, cigar, strand, read_seq) {
+                // Helper function to update base and sequnence offsets.
+                var update_base_offset = function update_base_offset(offset, cig_op, cig_len) {
+                    if ("M=NXD".indexOf(cig_op) !== -1) {
+                        offset += cig_len;
+                    }
+                    return offset;
+                };
+
+                var update_seq_offset = function update_seq_offset(offset, cig_op, cig_len) {
+                    if ("IX".indexOf(cig_op) !== -1) {
+                        offset += cig_len;
+                    }
+                    return offset;
+                };
+
+                var // Gets drawing coordinate for a sequence coordinate. Assumes closure variables w_scale and tile_low.
+                    get_draw_coord = function get_draw_coord(sequence_coord // -0.5 to offset sequence between bases.
+                    ) {
+                        return Math.floor(Math.max(0, (sequence_coord - tile_low - 0.5) * w_scale));
+                    };
+
+                ctx.textAlign = "center";
+                var tile_region = [tile_low, tile_high];
+                var base_offset = 0;
+                var seq_offset = 0;
+                var gap = Math.round(w_scale / 2);
+                var char_width_px = ctx.canvas.manager.char_width_px;
+
+                var block_color = strand === "+" ? this.prefs.detail_block_color : this.prefs.reverse_strand_color;
+
+                var pack_mode = mode === "Pack";
+
+                var draw_height = pack_mode ? PACK_FEATURE_HEIGHT : SQUISH_FEATURE_HEIGHT;
+
+                var rect_y = y_start + 1;
+                var paint_utils = new ReadPainterUtils(ctx, draw_height, w_scale, mode);
+                var drawing_blocks = [];
+                var s_start;
+                var s_end;
+
+                // Keep list of items that need to be drawn on top of initial drawing layer.
+                var draw_last = [];
+
+                // Parse cigar and get drawing blocks.
+                var t = this._parse_cigar(cigar);
+                cigar = t.cigar;
+                drawing_blocks = t.blocks;
+
+                // Draw blocks.
+                for (var i = 0; i < drawing_blocks.length; i++) {
+                    var block = drawing_blocks[i];
+
+                    if (is_overlap([feature_start + block[0], feature_start + block[1]], tile_region)) {
+                        s_start = get_draw_coord(feature_start + block[0]);
+                        s_end = get_draw_coord(feature_start + block[1]);
+
+                        // Make sure that block is drawn even if it too small to be rendered officially; in this case,
+                        // read is drawn at 1px.
+                        // TODO: need to ensure that s_start, s_end are calculated the same for both slotting
+                        // and drawing.
+                        if (s_start === s_end) {
+                            s_end += 1;
+                        }
+
+                        // Draw read base as rectangle.
+                        ctx.fillStyle = block_color;
+                        ctx.fillRect(s_start, rect_y, s_end - s_start, draw_height);
+                    }
+                }
+
+                // Draw read features.
+                for (var cig_id = 0, len = cigar.length; cig_id < len; cig_id++) {
+                    var cig = cigar[cig_id];
+                    var cig_op = "MIDNSHP=X" [cig[0]];
+                    var cig_len = cig[1];
+
+                    var seq_start = feature_start + base_offset;
+                    s_start = get_draw_coord(seq_start);
+                    s_end = get_draw_coord(seq_start + cig_len);
+
+                    // Skip feature if it's not in tile.
+                    if (!is_overlap([seq_start, seq_start + cig_len], tile_region)) {
+                        // Update offsets.
+                        base_offset = update_base_offset(base_offset, cig_op, cig_len);
+                        seq_offset = update_seq_offset(seq_offset, cig_op, cig_len);
+                        continue;
+                    }
+
+                    // Make sure that read is drawn even if it too small to be rendered officially; in this case,
+                    // read is drawn at 1px.
+                    // TODO: need to ensure that s_start, s_end are calculated the same for both slotting
+                    // and drawing.
+                    if (s_start === s_end) {
+                        s_end += 1;
+                    }
+
+                    // Draw read feature.
+                    switch (cig_op) {
+                        case "H": // Hard clipping.
+                        case "S": // Soft clipping.
+                        case "P":
+                            // Padding.
+                            // Sequence not present and not related to alignment; do nothing.
+                            break;
+                        case "M":
+                            // "Match".
+                            // Because it's not known whether there is a match, ignore.
+                            base_offset += cig_len;
+                            break;
+                        case "=": // Match with reference.
+                        case "X":
+                            // Mismatch with reference.
+                            //
+                            // Draw sequence and/or variants.
+                            //
+
+                            // Get sequence to draw.
+                            var cur_seq = "";
+                            if (cig_op === "X") {
+                                // Get sequence from read_seq.
+                                cur_seq = read_seq.slice(seq_offset, seq_offset + cig_len);
+                            } else if (this.ref_seq) {
+                                // && cig_op === '='
+                                // Use reference sequence.
+                                cur_seq = this.ref_seq.slice(
+                                    // If read starts after tile start, slice at read start.
+                                    Math.max(0, seq_start - tile_low),
+                                    // If read ends before tile end, slice at read end.
+                                    Math.min(seq_start - tile_low + cig_len, tile_high - tile_low));
+                            }
+
+                            // Draw sequence. Because cur_seq starts and read/tile start, go to there to start writing.
+                            var start_pos = Math.max(seq_start, tile_low);
+                            for (var c = 0; c < cur_seq.length; c++) {
+                                // Draw base if showing all (i.e. not showing differences) or there is a mismatch.
+                                if (cur_seq && !this.prefs.show_differences || cig_op === "X") {
+                                    // Draw base.
+                                    var c_start = Math.floor(Math.max(0, (start_pos + c - tile_low) * w_scale));
+                                    ctx.fillStyle = this.base_color_fn(cur_seq[c]);
+                                    if (pack_mode && w_scale > char_width_px) {
+                                        ctx.fillText(cur_seq[c], c_start, y_start + 9);
+                                    } else if (w_scale > 0.05) {
+                                        // Require a minimum w_scale so that variants are only drawn when somewhat zoomed in.
+                                        ctx.fillRect(c_start - gap, rect_y, Math.max(1, Math.round(w_scale)), draw_height);
+                                    }
+                                }
+                            }
+
+                            // Move forward in sequence only if sequence used to get mismatches.
+                            if (cig_op === "X") {
+                                seq_offset += cig_len;
+                            }
+                            base_offset += cig_len;
+
+                            break;
+                        case "N":
+                            // Skipped bases.
+                            ctx.fillStyle = CONNECTOR_COLOR;
+                            ctx.fillRect(s_start, rect_y + (draw_height - 1) / 2, s_end - s_start, 1);
+                            // No change in seq_offset because sequence not used when skipping.
+                            base_offset += cig_len;
+                            break;
+                        case "D":
+                            // Deletion.
+                            paint_utils.draw_deletion(s_start, rect_y, cig_len);
+                            base_offset += cig_len;
+                            break;
+                        case "I":
+                            // Insertion.
+                            // Check to see if sequence should be drawn at all by looking at the overlap between
+                            // the sequence region and the tile region.
+                            var insert_x_coord = s_start - gap;
+
+                            if (is_overlap([seq_start, seq_start + cig_len], tile_region)) {
+                                var seq = read_seq.slice(seq_offset, seq_offset + cig_len);
+                                // Insertion point is between the sequence start and the previous base: (-gap) moves
+                                // back from sequence start to insertion point.
+                                if (this.prefs.show_insertions) {
+                                    //
+                                    // Show inserted sequence above, centered on insertion point.
+                                    //
+
+                                    // Draw sequence.
+                                    // X center is offset + start - <half_sequence_length>
+                                    var x_center = s_start - (s_end - s_start) / 2;
+                                    if ((mode === "Pack" || this.mode === "Auto") && read_seq !== undefined && w_scale > char_width_px) {
+                                        // Draw sequence container.
+                                        ctx.fillStyle = "yellow";
+                                        ctx.fillRect(x_center - gap, y_start - 9, s_end - s_start, 9);
+                                        draw_last[draw_last.length] = {
+                                            type: "triangle",
+                                            data: [insert_x_coord, y_start + 4, 5]
+                                        };
+                                        ctx.fillStyle = CONNECTOR_COLOR;
+                                        // Based on overlap b/t sequence and tile, get sequence to be drawn.
+                                        switch (compute_overlap([seq_start, seq_start + cig_len], tile_region)) {
+                                            case OVERLAP_START:
+                                                seq = seq.slice(tile_low - seq_start);
+                                                break;
+                                            case OVERLAP_END:
+                                                seq = seq.slice(0, seq_start - tile_high);
+                                                break;
+                                            case CONTAINED_BY:
+                                                // All of sequence drawn.
+                                                break;
+                                            case CONTAINS:
+                                                seq = seq.slice(tile_low - seq_start, seq_start - tile_high);
+                                                break;
+                                        }
+                                        // Draw sequence.
+                                        for (var _c = 0, str_len = seq.length; _c < str_len; _c++) {
+                                            var _c_start = Math.floor(Math.max(0, (seq_start + _c - tile_low) * w_scale));
+                                            ctx.fillText(seq[_c], _c_start - (s_end - s_start) / 2, y_start);
+                                        }
+                                    } else {
+                                        // Draw block.
+                                        ctx.fillStyle = "yellow";
+                                        // TODO: This is a pretty hack-ish way to fill rectangle based on mode.
+                                        ctx.fillRect(x_center, y_start + (this.mode !== "Dense" ? 2 : 5), s_end - s_start, mode !== "Dense" ? SQUISH_FEATURE_HEIGHT : DENSE_FEATURE_HEIGHT);
+                                    }
+                                } else {
+                                    if ((mode === "Pack" || this.mode === "Auto") && read_seq !== undefined && w_scale > char_width_px) {
+                                        // Show insertions with a single number at the insertion point.
+                                        draw_last.push({
+                                            type: "text",
+                                            data: [seq.length, insert_x_coord, y_start + 9]
+                                        });
+                                    } else {
+                                        // TODO: probably can merge this case with code above.
+                                    }
+                                }
+                            }
+                            seq_offset += cig_len;
+                            // No change to base offset because insertions are drawn above sequence/read.
+                            break;
+                    }
+                }
+
+                //
+                // Draw last items.
+                //
+                ctx.fillStyle = "yellow";
+                var item;
+                var type;
+                var data;
+                for (var _i = 0; _i < draw_last.length; _i++) {
+                    item = draw_last[_i];
+                    type = item.type;
+                    data = item.data;
+                    if (type === "text") {
+                        ctx.save();
+                        ctx.font = "bold " + ctx.font;
+                        ctx.fillText(data[0], data[1], data[2]);
+                        ctx.restore();
+                    } else if (type === "triangle") {
+                        drawDownwardEquilateralTriangle(ctx, data[0], data[1], data[2]);
+                    }
+                }
+            }
+        }, {
+            key: "draw_element",
+            value: function draw_element(ctx, mode, feature, slot, tile_low, tile_high, w_scale, y_scale, width) {
+                // All features need a start, end, and vertical center.
+                // var feature_uid = feature[0];
+                var feature_start = feature[1];
+                var feature_end = feature[2];
+                var feature_name = feature[3];
+
+                var // -0.5 to put element between bases.
+                    f_start = Math.floor(Math.max(-0.5 * w_scale, (feature_start - tile_low - 0.5) * w_scale));
+
+                var f_end = Math.ceil(Math.min(width, Math.max(0, (feature_end - tile_low - 0.5) * w_scale)));
+
+                var y_start = (mode === "Dense" ? 0 : 0 + slot) * y_scale;
+
+                var draw_height = mode === "Pack" ? PACK_FEATURE_HEIGHT : SQUISH_FEATURE_HEIGHT;
+
+                // Draw read.
+                if (feature[5] instanceof Array) {
+                    // Read is paired.
+                    var connector = true;
+
+                    // Draw left/forward read.
+                    if (feature[4][1] >= tile_low && feature[4][0] <= tile_high && feature[4][2]) {
+                        this.draw_read(ctx, mode, w_scale, y_start, tile_low, tile_high, feature[4][0], feature[4][2], feature[4][3], feature[4][4]);
+                    } else {
+                        connector = false;
+                    }
+
+                    // Draw right/reverse read.
+                    if (feature[5][1] >= tile_low && feature[5][0] <= tile_high && feature[5][2]) {
+                        this.draw_read(ctx, mode, w_scale, y_start, tile_low, tile_high, feature[5][0], feature[5][2], feature[5][3], feature[5][4]);
+                    } else {
+                        connector = false;
+                    }
+
+                    // Draw connector if both reads were drawn.
+                    // TODO: currently, there is no way to connect reads drawn on different tiles; to connect reads on different tiles, data manager
+                    // code is needed to join mate pairs from different regions. Alternatively, requesting multiple regions of data at once would
+                    // make it possible to put together more easily.
+                    // -0.5 to position connector correctly between reads.
+                    var b1_end = Math.ceil(Math.min(width, Math.max(-0.5 * w_scale, (feature[4][1] - tile_low - 0.5) * w_scale)));
+
+                    var b2_start = Math.floor(Math.max(-0.5 * w_scale, (feature[5][0] - tile_low - 0.5) * w_scale));
+
+                    if (connector && b2_start > b1_end) {
+                        ctx.fillStyle = CONNECTOR_COLOR;
+                        var line_height = y_start + 1 + (draw_height - 1) / 2;
+                        dashedLine(ctx, b1_end, line_height, b2_start, line_height);
+                    }
+                } else {
+                    // Read is single.
+                    this.draw_read(ctx, mode, w_scale, y_start, tile_low, tile_high, feature_start, feature[4], feature[5], feature[6]);
+                }
+                if (mode === "Pack" && feature_start >= tile_low && feature_name !== ".") {
+                    // Draw label.
+                    ctx.fillStyle = this.prefs.label_color;
+                    if (tile_low === 0 && f_start - ctx.measureText(feature_name).width < 0) {
+                        ctx.textAlign = "left";
+                        ctx.fillText(feature_name, f_end + LABEL_SPACING, y_start + 9, this.max_label_length);
+                    } else {
+                        ctx.textAlign = "right";
+                        ctx.fillText(feature_name, f_start - LABEL_SPACING, y_start + 9, this.max_label_length);
+                    }
+                }
+
+                // FIXME: provide actual coordinates for drawn read.
+                return [0, 0];
+            }
+        }]);
+
+        return ReadPainter;
+    }(FeaturePainter);
+
+    var ArcLinkedFeaturePainter = function(_LinkedFeaturePainter) {
+        _inherits(ArcLinkedFeaturePainter, _LinkedFeaturePainter);
+
+        function ArcLinkedFeaturePainter(data, view_start, view_end, prefs, mode, alpha_scaler, height_scaler) {
+            _classCallCheck(this, ArcLinkedFeaturePainter);
+
+            var _this5 = _possibleConstructorReturn(this, (ArcLinkedFeaturePainter.__proto__ || Object.getPrototypeOf(ArcLinkedFeaturePainter)).call(this, data, view_start, view_end, prefs, mode, alpha_scaler, height_scaler));
+
+            // Need to know the longest feature length for adding spacing
+            _this5.longest_feature_length = _this5.calculate_longest_feature_length();
+            _this5.draw_background_connector = false;
+            _this5.draw_individual_connectors = true;
+            return _this5;
+        }
+
+        _createClass(ArcLinkedFeaturePainter, [{
+            key: "calculate_longest_feature_length",
+            value: function calculate_longest_feature_length() {
+                var longest_feature_length = 0;
+                for (var i = 0, len = this.data.length; i < len; i++) {
+                    var feature = this.data[i];
+                    var feature_start = feature[1];
+                    var feature_end = feature[2];
+                    longest_feature_length = Math.max(longest_feature_length, feature_end - feature_start);
+                }
+                return longest_feature_length;
+            }
+        }, {
+            key: "get_top_padding",
+            value: function get_top_padding(width) {
+                var view_range = this.view_end - this.view_start;
+                var w_scale = width / view_range;
+                return Math.min(128, Math.ceil(this.longest_feature_length / 2 * w_scale));
+            }
+        }, {
+            key: "draw_connector",
+            value: function draw_connector(ctx, block1_start, block1_end, block2_start, block2_end, y_start) {
+                // Arc drawing -- from closest endpoints
+                var x_center = (block1_end + block2_start) / 2;
+                var radius = block2_start - x_center;
+                if (radius > 0) {
+                    ctx.beginPath();
+                    ctx.arc(x_center, y_start, block2_start - x_center, Math.PI, 0);
+                    ctx.stroke();
+                }
+            }
+        }]);
+
+        return ArcLinkedFeaturePainter;
+    }(LinkedFeaturePainter);
+
+    var Color = function() {
+        function Color(rgb, a) {
+            _classCallCheck(this, Color);
+
+            /**
+             * The end goal here, is to parse the arguments
+             * into an integer triplet, such as `128, 255, 0`
+             *
+             * This facilitates operations and conversions.
+             */
+            if (Array.isArray(rgb)) {
+                this.rgb = rgb;
+            } else if (rgb.length == 6) {
+                this.rgb = rgb.match(/.{2}/g).map(function(c) {
+                    return parseInt(c, 16);
+                });
+            } else if (rgb.length == 7) {
+                this.rgb = rgb.substring(1, 7).match(/.{2}/g).map(function(c) {
+                    return parseInt(c, 16);
+                });
+            } else {
+                this.rgb = rgb.split("").map(function(c) {
+                    return parseInt(c + c, 16);
+                });
+            }
+            this.alpha = typeof a === "number" ? a : 1;
+        }
+
+        _createClass(Color, [{
+            key: "eval",
+            value: function _eval() {
+                return this;
+            }
+        }, {
+            key: "toCSS",
+            value: function toCSS() {
+                if (this.alpha < 1.0) {
+                    return "rgba(" + this.rgb.map(function(c) {
+                        return Math.round(c);
+                    }).concat(this.alpha).join(", ") + ")";
+                } else {
+                    return "#" + this.rgb.map(function(i) {
+                        i = Math.round(i);
+                        i = (i > 255 ? 255 : i < 0 ? 0 : i).toString(16);
+                        return i.length === 1 ? "0" + i : i;
+                    }).join("");
+                }
+            }
+        }, {
+            key: "toHSL",
+            value: function toHSL() {
+                var r = this.rgb[0] / 255;
+                var g = this.rgb[1] / 255;
+                var b = this.rgb[2] / 255;
+                var a = this.alpha;
+                var max = Math.max(r, g, b);
+                var min = Math.min(r, g, b);
+                var h;
+                var s;
+                var l = (max + min) / 2;
+                var d = max - min;
+
+                if (max === min) {
+                    h = s = 0;
+                } else {
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+                    switch (max) {
+                        case r:
+                            h = (g - b) / d + (g < b ? 6 : 0);
+                            break;
+                        case g:
+                            h = (b - r) / d + 2;
+                            break;
+                        case b:
+                            h = (r - g) / d + 4;
+                            break;
+                    }
+                    h /= 6;
+                }
+                return {
+                    h: h * 360,
+                    s: s,
+                    l: l,
+                    a: a
+                };
+            }
+        }, {
+            key: "toARGB",
+            value: function toARGB() {
+                var argb = [Math.round(this.alpha * 255)].concat(this.rgb);
+                return "#" + argb.map(function(i) {
+                    i = Math.round(i);
+                    i = (i > 255 ? 255 : i < 0 ? 0 : i).toString(16);
+                    return i.length === 1 ? "0" + i : i;
+                }).join("");
+            }
+        }, {
+            key: "mix",
+            value: function mix(color2, weight) {
+                var color1 = this;
+
+                var p = weight; // .value / 100.0;
+                var w = p * 2 - 1;
+                var a = color1.toHSL().a - color2.toHSL().a;
+
+                var w1 = ((w * a == -1 ? w : (w + a) / (1 + w * a)) + 1) / 2.0;
+                var w2 = 1 - w1;
+
+                var rgb = [color1.rgb[0] * w1 + color2.rgb[0] * w2, color1.rgb[1] * w1 + color2.rgb[1] * w2, color1.rgb[2] * w1 + color2.rgb[2] * w2];
+
+                var alpha = color1.alpha * p + color2.alpha * (1 - p);
+
+                return new Color(rgb, alpha);
+            }
+        }]);
+
+        return Color;
+    }();
+
+    var LinearRamp = function() {
+        function LinearRamp(start_color, end_color, start_value, end_value) {
+            _classCallCheck(this, LinearRamp);
+
+            /**
+             * Simple linear gradient
+             */
+            this.start_color = new Color(start_color);
+            this.end_color = new Color(end_color);
+            this.start_value = start_value;
+            this.end_value = end_value;
+            this.value_range = end_value - start_value;
+        }
+
+        _createClass(LinearRamp, [{
+            key: "map_value",
+            value: function map_value(value) {
+                value = Math.max(value, this.start_value);
+                value = Math.min(value, this.end_value);
+                value = (value - this.start_value) / this.value_range;
+                // HACK: just red for now
+                // return "hsl(0,100%," + (value * 100) + "%)"
+                return this.start_color.mix(this.end_color, 1 - value).toCSS();
+            }
+        }]);
+
+        return LinearRamp;
+    }();
+
+    var SplitRamp = function() {
+        function SplitRamp(start_color, middle_color, end_color, start_value, end_value) {
+            _classCallCheck(this, SplitRamp);
+
+            /**
+             * Two gradients split away from 0
+             */
+            this.positive_ramp = new LinearRamp(middle_color, end_color, 0, end_value);
+            this.negative_ramp = new LinearRamp(middle_color, start_color, 0, -start_value);
+            this.start_value = start_value;
+            this.end_value = end_value;
+        }
+
+        _createClass(SplitRamp, [{
+            key: "map_value",
+            value: function map_value(value) {
+                value = Math.max(value, this.start_value);
+                value = Math.min(value, this.end_value);
+                if (value >= 0) {
+                    return this.positive_ramp.map_value(value);
+                } else {
+                    return this.negative_ramp.map_value(-value);
+                }
+            }
+        }]);
+
+        return SplitRamp;
+    }();
+
+    var DiagonalHeatmapPainter = function(_Painter3) {
+        _inherits(DiagonalHeatmapPainter, _Painter3);
+
+        function DiagonalHeatmapPainter(data, view_start, view_end, prefs, mode) {
+            _classCallCheck(this, DiagonalHeatmapPainter);
+
+            var _this6 = _possibleConstructorReturn(this, (DiagonalHeatmapPainter.__proto__ || Object.getPrototypeOf(DiagonalHeatmapPainter)).call(this, data, view_start, view_end, prefs, mode));
+
+            var i;
+            var len;
+
+            if (_this6.prefs.min_value === undefined) {
+                var min_value = Infinity;
+                for (i = 0, len = _this6.data.length; i < len; i++) {
+                    min_value = Math.min(min_value, _this6.data[i][6]);
+                }
+                _this6.prefs.min_value = min_value;
+            }
+            if (_this6.prefs.max_value === undefined) {
+                var max_value = -Infinity;
+                for (i = 0, len = _this6.data.length; i < len; i++) {
+                    max_value = Math.max(max_value, _this6.data[i][6]);
+                }
+                _this6.prefs.max_value = max_value;
+            }
+            return _this6;
+        }
+
+        _createClass(DiagonalHeatmapPainter, [{
+            key: "draw",
+            value: function draw(ctx, width, height, w_scale) {
+                var min_value = this.prefs.min_value;
+                var max_value = this.prefs.max_value;
+                var view_start = this.view_start;
+                var invsqrt2 = 1 / Math.sqrt(2);
+
+                var ramp = new SplitRamp(this.prefs.neg_color, "#FFFFFF", this.prefs.pos_color, min_value, max_value);
+
+                var d;
+                var s1;
+                var e1;
+                var s2;
+                var e2;
+                var value;
+
+                var scale = function scale(p) {
+                    return (p - view_start) * w_scale;
+                };
+
+                ctx.save();
+
+                // Draw into triangle, then rotate and scale
+                ctx.rotate(-45 * Math.PI / 180);
+                ctx.scale(invsqrt2, invsqrt2);
+
+                // Paint track.
+                for (var i = 0, len = this.data.length; i < len; i++) {
+                    d = this.data[i];
+
+                    s1 = scale(d[1]);
+                    e1 = scale(d[2]);
+                    s2 = scale(d[4]);
+                    e2 = scale(d[5]);
+                    value = d[6];
+
+                    ctx.fillStyle = ramp.map_value(value);
+                    ctx.fillRect(s1, s2, e1 - s1, e2 - s2);
+                }
+
+                ctx.restore();
+            }
+        }], [{
+            key: "default_prefs",
+            get: function get() {
+                return {
+                    min_value: undefined,
+                    max_value: undefined,
+                    mode: "Heatmap",
+                    pos_color: "#FF8C00",
+                    neg_color: "#4169E1"
+                };
+            }
+        }]);
+
+        return DiagonalHeatmapPainter;
+    }(Painter);
+
+    var ReadPainterUtils = function() {
+        function ReadPainterUtils(ctx, row_height, px_per_base, mode) {
+            _classCallCheck(this, ReadPainterUtils);
+
+            this.ctx = ctx;
+            this.row_height = row_height;
+            this.px_per_base = px_per_base;
+            this.draw_details = (mode === "Pack" || mode === "Auto") && px_per_base >= ctx.canvas.manager.char_width_px;
+            this.delete_details_thickness = 0.2;
+        }
+
+        /**
+         * Draw deletion of base(s).
+         * @param draw_detail if true, drawing in detail and deletion is drawn more subtly
+         */
+
+
+        _createClass(ReadPainterUtils, [{
+            key: "draw_deletion",
+            value: function draw_deletion(x, y, len) {
+                this.ctx.fillStyle = "black";
+                var thickness = (this.draw_details ? this.delete_details_thickness : 1) * this.row_height;
+                y += 0.5 * (this.row_height - thickness);
+                this.ctx.fillRect(x, y, len * this.px_per_base, thickness);
+            }
+        }]);
+
+        return ReadPainterUtils;
+    }();
+
+    var VariantPainter = function(_Painter4) {
+        _inherits(VariantPainter, _Painter4);
+
+        function VariantPainter(data, view_start, view_end, prefs, mode, base_color_fn) {
+            _classCallCheck(this, VariantPainter);
+
+            var _this7 = _possibleConstructorReturn(this, (VariantPainter.__proto__ || Object.getPrototypeOf(VariantPainter)).call(this, data, view_start, view_end, prefs, mode));
+
+            _this7.base_color_fn = base_color_fn;
+            _this7.divider_height = 1;
+            return _this7;
+        }
+
+        /**
+         * Height of a single row, depends on mode
+         */
+
+
+        _createClass(VariantPainter, [{
+            key: "get_row_height",
+            value: function get_row_height() {
+                var mode = this.mode;
+                var height;
+                if (mode === "Dense") {
+                    height = DENSE_TRACK_HEIGHT;
+                } else if (mode === "Squish") {
+                    height = SQUISH_TRACK_HEIGHT;
+                } else {
+                    // mode === "Pack"
+                    height = PACK_TRACK_HEIGHT;
+                }
+                return height;
+            }
+        }, {
+            key: "get_required_height",
+            value: function get_required_height(num_samples) {
+                // FIXME: for single-sample data, height should be summary_height when zoomed out and
+                // row_height when zoomed in.
+                var height = this.prefs.summary_height;
+
+                // If showing sample data, height is summary + divider + samples.
+                if (num_samples > 1 && this.prefs.show_sample_data) {
+                    height += this.divider_height + num_samples * this.get_row_height();
+                }
+                return height;
+            }
+        }, {
+            key: "draw",
+            value: function draw(ctx, width, height, w_scale) {
+                ctx.save();
+
+                var
+                    /**
+                     * Returns dictionary of information about an indel; returns empty if there no indel. Assumes indel is left-aligned.
+                     * Dict attributes:
+                     *    -type: 'insertion' or 'deletion'
+                     *    -start: where the deletion starts relative to reference start
+                     *    -len: how long the deletion is
+                     */
+                    get_indel_info = function get_indel_info(ref, alt) {
+                        var ref_len = ref.length;
+                        var alt_len = alt.length;
+                        var start = 0;
+                        var len = 1;
+                        var type = null;
+                        if (alt === "-") {
+                            type = "deletion";
+                            len = ref.length;
+                        } else if (ref.indexOf(alt) === 0 && ref_len > alt_len) {
+                            type = "deletion";
+                            len = ref_len - alt_len;
+                            start = alt_len;
+                        } else if (alt.indexOf(ref) === 0 && ref_len < alt_len) {
+                            // Insertion.
+                            type = "insertion";
+                            len = alt_len - ref_len;
+                            start = alt_len;
+                        }
+
+                        return type !== null ? {
+                            type: type,
+                            start: start,
+                            len: len
+                        } : {};
+                    };
+
+                // Draw.
+                var locus_data;
+
+                var pos;
+                var ref;
+                var alt;
+                var sample_gts;
+                var allele_counts;
+                var variant;
+                var draw_x_start;
+                var draw_y_start;
+                var genotype;
+
+                var // Always draw variants at least 1 pixel wide.
+                    base_px = Math.max(1, Math.floor(w_scale));
+
+                var // Determine number of samples.
+                    num_samples = this.data.length ? this.data[0][7].split(",").length : 0;
+
+                var row_height = this.mode === "Squish" ? SQUISH_TRACK_HEIGHT : PACK_TRACK_HEIGHT;
+
+                var // If zoomed out, fill the whole row with feature to make it easier to read;
+                    // when zoomed in, use feature height so that there are gaps in sample rows.
+                    feature_height = w_scale < 0.1 ? row_height : this.mode === "Squish" ? SQUISH_FEATURE_HEIGHT : PACK_FEATURE_HEIGHT;
+
+                var draw_summary = true;
+
+                var paint_utils = new ReadPainterUtils(ctx, row_height, w_scale, this.mode);
+
+                var j;
+
+                // If there's a single sample, update drawing variables.
+                if (num_samples === 1) {
+                    row_height = feature_height = w_scale < ctx.canvas.manager.char_width_px ? this.prefs.summary_height : row_height;
+                    paint_utils.row_height = row_height;
+                    // No summary when there's a single sample.
+                    draw_summary = false;
+                }
+
+                // Draw divider between summary and samples.
+                if (this.prefs.show_sample_data && draw_summary) {
+                    ctx.fillStyle = "#F3F3F3";
+                    ctx.globalAlpha = 1;
+                    ctx.fillRect(0, this.prefs.summary_height - this.divider_height, width, this.divider_height);
+                }
+
+                // Draw variants.
+                ctx.textAlign = "center";
+                for (var i = 0; i < this.data.length; i++) {
+                    // Get locus data.
+                    locus_data = this.data[i];
+                    pos = locus_data[1];
+                    ref = locus_data[3];
+                    alt = [locus_data[4].split(",")];
+                    sample_gts = locus_data[7].split(",");
+                    allele_counts = locus_data.slice(8);
+
+                    // Process alterate values to derive information about each alt.
+                    alt = _.map(_.flatten(alt), function(a) {
+                        var alt_info = {
+                            type: "snp",
+                            value: a,
+                            start: 0
+                        };
+
+                        var indel_info = get_indel_info(ref, a);
+
+                        return _.extend(alt_info, indel_info);
+                    });
+
+                    // Only draw locus data if it's in viewing region.
+                    if (pos < this.view_start || pos > this.view_end) {
+                        continue;
+                    }
+
+                    // Draw summary for alleles.
+                    if (draw_summary) {
+                        ctx.fillStyle = "#999999";
+                        ctx.globalAlpha = 1;
+                        for (j = 0; j < alt.length; j++) {
+                            // Draw background for summary.
+                            draw_x_start = this.get_start_draw_pos(pos + alt[j].start, w_scale);
+                            ctx.fillRect(draw_x_start, 0, base_px, this.prefs.summary_height);
+                            draw_y_start = this.prefs.summary_height;
+                            // Draw allele fractions onto summary.
+                            for (j = 0; j < alt.length; j++) {
+                                ctx.fillStyle = alt[j].type === "deletion" ? "black" : this.base_color_fn(alt[j].value);
+                                var allele_frac = allele_counts / sample_gts.length;
+                                var draw_height = Math.ceil(this.prefs.summary_height * allele_frac);
+                                ctx.fillRect(draw_x_start, draw_y_start - draw_height, base_px, draw_height);
+                                draw_y_start -= draw_height;
+                            }
+                        }
+                    }
+
+                    // Done drawing if not showing samples data.
+                    if (!this.prefs.show_sample_data) {
+                        continue;
+                    }
+
+                    // Draw sample genotype(s).
+                    draw_y_start = draw_summary ? this.prefs.summary_height + this.divider_height : 0;
+                    for (j = 0; j < sample_gts.length; j++, draw_y_start += row_height) {
+                        genotype = sample_gts[j] ? sample_gts[j].split(/\/|\|/) : ["0", "0"];
+
+                        // Get variant to draw and set drawing properties.
+                        variant = null;
+                        if (genotype[0] === genotype[1]) {
+                            if (genotype[0] === ".") {
+                                // TODO: draw uncalled variant.
+                            } else if (genotype[0] !== "0") {
+                                // Homozygous for variant.
+                                variant = alt[parseInt(genotype[0], 10) - 1];
+                                ctx.globalAlpha = 1;
+                            }
+                            // else reference
+                        } else {
+                            // Heterozygous for variant.
+                            variant = genotype[0] !== "0" ? genotype[0] : genotype[1];
+                            variant = alt[parseInt(variant, 10) - 1];
+                            ctx.globalAlpha = 0.5;
+                        }
+
+                        // If there's a variant, draw it.
+                        if (variant) {
+                            draw_x_start = this.get_start_draw_pos(pos + variant.start, w_scale);
+                            if (variant.type === "snp") {
+                                var snp = variant.value;
+                                ctx.fillStyle = this.base_color_fn(snp);
+                                if (paint_utils.draw_details) {
+                                    ctx.fillText(snp, this.get_draw_pos(pos, w_scale), draw_y_start + row_height);
+                                } else {
+                                    ctx.fillRect(draw_x_start, draw_y_start + 1, base_px, feature_height);
+                                }
+                            } else if (variant.type === "deletion") {
+                                paint_utils.draw_deletion(draw_x_start, draw_y_start + 1, variant.len);
+                            } else {
+                                // TODO: handle insertions.
+                            }
+                        }
+                    }
+                }
+
+                ctx.restore();
+            }
+        }]);
+
+        return VariantPainter;
+    }(Painter);
+
+    exports.default = {
+        Scaler: Scaler,
+        LinePainter: LinePainter,
+        LinkedFeaturePainter: LinkedFeaturePainter,
+        ReadPainter: ReadPainter,
+        ArcLinkedFeaturePainter: ArcLinkedFeaturePainter,
+        DiagonalHeatmapPainter: DiagonalHeatmapPainter,
+        VariantPainter: VariantPainter
+    };
+});
 //# sourceMappingURL=../../../maps/viz/trackster/painters.js.map
