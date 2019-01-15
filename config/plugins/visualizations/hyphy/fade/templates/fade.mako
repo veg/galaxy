@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>HyPhy-aBSREL</title>
+    <title>HyPhy-FEL</title>
 
     ${h.stylesheet_link( app_root + 'main.css' )}
     ${h.javascript_link( app_root + 'bundle.js' )}
@@ -21,6 +21,6 @@
     var hda_id = '${trans.security.encode_id( hda.id )}';
     var url = raw_url + '/' + hda_id + '/display?to_ext=json';
 
-    absrel(url, "hyphy-vision-root");
+    fade(url, "hyphy-vision-root");
   </script>
 </html>

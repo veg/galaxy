@@ -6,12 +6,13 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>HyPhy-aBSREL</title>
+    <title>HyPhy-BGM</title>
 
     ${h.stylesheet_link( app_root + 'main.css' )}
     ${h.javascript_link( app_root + 'bundle.js' )}
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/v4-shims.css">
+
   </head>
   <body>
     <div id="hyphy-vision-root" />
@@ -21,6 +22,6 @@
     var hda_id = '${trans.security.encode_id( hda.id )}';
     var url = raw_url + '/' + hda_id + '/display?to_ext=json';
 
-    absrel(url, "hyphy-vision-root");
+    bgm(url, "hyphy-vision-root");
   </script>
 </html>
