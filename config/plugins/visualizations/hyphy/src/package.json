@@ -10,6 +10,13 @@
     "webpack-dev-server": "^3.1.4"
   },
   "dependencies": {
-    "hyphy-vision": "^2.2.0"
+    "hyphy-vision": "2.4.0"
+  },
+  "name": "galaxy-hyphy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack --mode=production"
   }
 }

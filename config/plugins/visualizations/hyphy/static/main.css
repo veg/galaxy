@@ -30784,7 +30784,8 @@ readers do not read off random characters that represent icons */
 .btn-primary:hover {
   color: #fff;
   background-color: #048276;
-  -webkit-transition: ease-in-out 125ms; }
+  -webkit-transition: ease-in-out 125ms;
+  transition: 125ms; }
 
 .btn-primary:active,
 .btn-primary.active,
@@ -30931,6 +30932,13 @@ table {
 
 .site-table {
   margin: 10px 0px 0px 0px; }
+
+.fade-site-table {
+  cursor: pointer; }
+
+@media (min-width: 1200px) {
+  .fade-site-table {
+    table-layout: fixed; } }
 
 .table > thead > tr > th {
   border-bottom: 2px solid #a1c6b3;
