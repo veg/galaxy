@@ -1,5 +1,5 @@
 <%
-  app_root = "/static/plugins/visualizations/hyphy/static/"
+  app_root = "/static/plugins/visualizations/hyphyvision/static/"
 %>
 
 <html lang="en">
