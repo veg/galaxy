@@ -1,29 +1,3 @@
-~~~~~~~~~~~~~~~
-``filter-with``
-~~~~~~~~~~~~~~~
-
-:Description:
-    If running behind a proxy server and Galaxy is served from a
-    subdirectory, enable the proxy-prefix filter and set the prefix in
-    the [filter:proxy-prefix] section above.
-:Default: ``proxy-prefix``
-:Type: str
-
-
-~~~~~~~~~~~~~~~
-``cookie_path``
-~~~~~~~~~~~~~~~
-
-:Description:
-    If proxy-prefix is enabled and you're running more than one Galaxy
-    instance behind one hostname, you will want to set this to the
-    same path as the prefix in the filter above.  This value becomes
-    the "path" attribute set in the cookie so the cookies from each
-    instance will not clobber each other.
-:Default: ``None``
-:Type: str
-
-
 ~~~~~~~~~~~~~
 ``log_level``
 ~~~~~~~~~~~~~
@@ -41,7 +15,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 :Description:
-    Database connection Galaxy reports are intended for production
+    Database connection. Galaxy Reports are intended for production
     Galaxy instances, so sqlite (and the default value below) is not
     supported. An SQLAlchemy connection string should be used specify
     an external database.
@@ -54,8 +28,7 @@
 ~~~~~~~~~~~~~
 
 :Description:
-    Where dataset files are saved Temporary storage for additional
-    datasets, this should be shared through the cluster
+    Where dataset files are stored.
 :Default: ``database/files``
 :Type: str
 
@@ -65,8 +38,7 @@
 ~~~~~~~~~~~~~~~~~
 
 :Description:
-    Where dataset files are saved Temporary storage for additional
-    datasets, this should be shared through the cluster
+    Where temporary files are stored.
 :Default: ``database/tmp``
 :Type: str
 
@@ -108,7 +80,7 @@
 
 :Description:
     NEVER enable this on a public site (even test or QA)
-:Default: ``true``
+:Default: ``false``
 :Type: bool
 
 
@@ -151,6 +123,20 @@
     Mail
 :Default: ``your_bugs@bx.psu.edu``
 :Type: str
+
+
+~~~~~~~~~~~~~~~~~~~~
+``enable_beta_gdpr``
+~~~~~~~~~~~~~~~~~~~~
+
+:Description:
+    Enables GDPR Compliance mode. This makes several changes to the
+    way Galaxy logs and exposes data externally such as removing
+    emails/usernames from logs and bug reports.  You are responsible
+    for removing personal data from backups.  Please read the GDPR
+    section under the special topics area of the admin documentation.
+:Default: ``false``
+:Type: bool
 
 
 

@@ -1,9 +1,13 @@
+/** This class renders the grid list. */
+import $ from "jquery";
+import Backbone from "backbone";
+import { getAppRoot } from "onload/loadConfig";
+import { getGalaxyInstance } from "app";
 import _l from "utils/localization";
 import AjaxQueue from "utils/ajax-queue";
 import Utils from "utils/utils";
-/** This class renders the grid list. */
 import GridView from "mvc/grid/grid-view";
-import HistoryModel from "mvc/history/history-model";
+import { History } from "mvc/history/history-model";
 import historyCopyDialog from "mvc/history/copy-dialog";
 import LoadingIndicator from "ui/loading-indicator";
 
@@ -21,35 +25,32 @@ var HistoryGridView = GridView.extend({
             this.$el.find(".delayed-value-datasets_by_state").map((i, el) => {
                 return () => {
                     const historyId = $(el).data("id");
-                    const url = `${
-                        Galaxy.root
-                    }api/histories/${historyId}?keys=nice_size,contents_active,contents_states`;
+                    const url = `${getAppRoot()}api/histories/${historyId}?keys=nice_size,contents_active,contents_states`;
                     const options = {};
                     options.url = url;
                     options.type = "GET";
                     options.success = req => {
-                        const contentsStates = req["contents_states"];
+                        const contentsStates = req.contents_states;
                         let stateHtml = "";
-                        for (let state of ["ok", "running", "queued", "new", "error"]) {
+                        for (const state of ["ok", "running", "queued", "new", "error"]) {
                             const stateCount = contentsStates[state];
                             if (stateCount) {
                                 stateHtml += `<div class="count-box state-color-${state}" title="Datasets in ${state} state">${stateCount}</div> `;
                             }
                         }
-                        const contentsActive = req["contents_active"];
-                        const deleted = contentsActive["deleted"];
+                        const contentsActive = req.contents_active;
+                        const deleted = contentsActive.deleted;
                         if (deleted) {
                             stateHtml += `<div class="count-box state-color-deleted" title="Deleted datasets">${deleted}</div> `;
                         }
-                        const hidden = contentsActive["hidden"];
+                        const hidden = contentsActive.hidden;
                         if (hidden) {
                             stateHtml += `<div class="count-box state-color-hidden" title="Hidden datasets">${hidden}</div> `;
                         }
                         $(`.delayed-value-datasets_by_state[data-id='${historyId}']`).html(stateHtml);
-                        $(`.delayed-value-disk_size[data-id='${historyId}']`).html(req["nice_size"]);
+                        $(`.delayed-value-disk_size[data-id='${historyId}']`).html(req.nice_size);
                     };
-                    var xhr = jQuery.ajax(options);
-                    return xhr;
+                    return $.ajax(options);
                 };
             })
         );
@@ -57,7 +58,7 @@ var HistoryGridView = GridView.extend({
         ajaxQueue.start();
     },
     _showCopyDialog: function(id) {
-        var history = new HistoryModel.History({ id: id });
+        var history = new History({ id: id });
         history
             .fetch()
             .fail(() => {
@@ -65,8 +66,9 @@ var HistoryGridView = GridView.extend({
             })
             .done(() => {
                 historyCopyDialog(history, {}).done(() => {
-                    if (window.parent && window.parent.Galaxy && window.parent.Galaxy.currHistoryPanel) {
-                        window.parent.Galaxy.currHistoryPanel.loadCurrentHistory();
+                    const Galaxy = getGalaxyInstance();
+                    if (Galaxy && Galaxy.currHistoryPanel) {
+                        Galaxy.currHistoryPanel.loadCurrentHistory();
                     }
                     window.location.reload(true);
                 });
@@ -74,11 +76,9 @@ var HistoryGridView = GridView.extend({
     },
     /** Add an operation to the items menu */
     add_operation: function(popup, operation, item) {
-        var self = this;
-        var settings = item.operation_config[operation.label];
         if (operation.label == "Copy") {
             operation.onclick = id => {
-                self._showCopyDialog(id);
+                this._showCopyDialog(id);
             };
         }
         GridView.prototype.add_operation.call(this, popup, operation, item);
@@ -88,20 +88,20 @@ var HistoryGridView = GridView.extend({
 var View = Backbone.View.extend({
     title: _l("Histories"),
     initialize: function(options) {
-        var self = this;
+        const Galaxy = getGalaxyInstance();
         LoadingIndicator.markViewAsLoading(this);
 
         if (options.action_id == "list_published") {
             this.active_tab = "shared";
-        } else if ((options.action_id = "list")) {
+        } else if (options.action_id == "list") {
             this.active_tab = "user";
         }
         this.model = new Backbone.Model();
         Utils.get({
-            url: `${Galaxy.root}history/${options.action_id}?${$.param(Galaxy.params)}`,
-            success: function(response) {
-                self.model.set(response);
-                self.render();
+            url: `${getAppRoot()}history/${options.action_id}?${$.param(Galaxy.params)}`,
+            success: response => {
+                this.model.set(response);
+                this.render();
             }
         });
     },

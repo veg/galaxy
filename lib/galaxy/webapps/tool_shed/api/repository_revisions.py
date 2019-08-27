@@ -4,9 +4,8 @@ from sqlalchemy import and_
 
 from galaxy import util
 from galaxy import web
-from galaxy.web.base.controller import BaseAPIController, HTTPBadRequest
+from galaxy.webapps.base.controller import BaseAPIController, HTTPBadRequest
 from tool_shed.capsule import capsule_manager
-from tool_shed.util import hg_util
 from tool_shed.util import metadata_util
 from tool_shed.util import repository_util
 
@@ -16,7 +15,7 @@ log = logging.getLogger(__name__)
 class RepositoryRevisionsController(BaseAPIController):
     """RESTful controller for interactions with tool shed repository revisions."""
 
-    @web.expose_api_anonymous
+    @web.legacy_expose_api_anonymous
     def export(self, trans, payload, **kwd):
         """
         POST /api/repository_revisions/export
@@ -67,7 +66,7 @@ class RepositoryRevisionsController(BaseAPIController):
                         'user_id' : trans.security.encode_id}
         return value_mapper
 
-    @web.expose_api_anonymous
+    @web.legacy_expose_api_anonymous
     def index(self, trans, **kwd):
         """
         GET /api/repository_revisions
@@ -104,7 +103,7 @@ class RepositoryRevisionsController(BaseAPIController):
             repository_metadata_dicts.append(repository_metadata_dict)
         return repository_metadata_dicts
 
-    @web.expose_api_anonymous
+    @web.legacy_expose_api_anonymous
     def repository_dependencies(self, trans, id, **kwd):
         """
         GET /api/repository_revisions/{encoded repository_metadata id}/repository_dependencies
@@ -141,13 +140,7 @@ class RepositoryRevisionsController(BaseAPIController):
                 if repository_dependency_repository_metadata is None:
                     # The changeset_revision column in the repository_metadata table has been updated with a new
                     # value value, so find the changeset_revision to which we need to update.
-                    repo = hg_util.get_repo_for_repository(trans.app,
-                                                           repository=repository_dependency,
-                                                           repo_path=None,
-                                                           create=False)
-                    new_changeset_revision = metadata_util.get_next_downloadable_changeset_revision(repository_dependency,
-                                                                                                    repo,
-                                                                                                    changeset_revision)
+                    new_changeset_revision = metadata_util.get_next_downloadable_changeset_revision(trans.app, repository_dependency, changeset_revision)
                     if new_changeset_revision != changeset_revision:
                         repository_dependency_repository_metadata = \
                             metadata_util.get_repository_metadata_by_changeset_revision(trans.app,
@@ -182,7 +175,7 @@ class RepositoryRevisionsController(BaseAPIController):
                 repository_dependencies_dicts.append(repository_dependency_metadata_dict)
         return repository_dependencies_dicts
 
-    @web.expose_api_anonymous
+    @web.legacy_expose_api_anonymous
     def show(self, trans, id, **kwd):
         """
         GET /api/repository_revisions/{encoded_repository_metadata_id}
@@ -203,7 +196,7 @@ class RepositoryRevisionsController(BaseAPIController):
                                                       id=encoded_repository_id)
         return repository_metadata_dict
 
-    @web.expose_api
+    @web.legacy_expose_api
     def update(self, trans, payload, **kwd):
         """
         PUT /api/repository_revisions/{encoded_repository_metadata_id}/{payload}

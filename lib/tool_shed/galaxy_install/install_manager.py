@@ -10,7 +10,7 @@ from six import string_types
 from sqlalchemy import or_
 
 from galaxy import exceptions, util
-from galaxy.tools.deps import views
+from galaxy.tool_util.deps import views
 from tool_shed.galaxy_install.datatypes import custom_datatype_manager
 from tool_shed.galaxy_install.metadata.installed_repository_metadata_manager import InstalledRepositoryMetadataManager
 from tool_shed.galaxy_install.repository_dependencies import repository_dependency_manager
@@ -470,7 +470,7 @@ class InstallRepositoryManager(object):
             # dictionaries, a dictionary defining the Repository, a dictionary defining the
             # Repository revision (RepositoryMetadata), and a dictionary including the additional
             # information required to install the repository.
-            items = json.loads(raw_text)
+            items = json.loads(util.unicodify(raw_text))
             repository_revision_dict = items[1]
             repo_info_dict = items[2]
         else:
@@ -879,12 +879,9 @@ class InstallRepositoryManager(object):
                 current_changeset_revision = changeset_revision_dict.get('changeset_revision', None)
                 current_ctx_rev = changeset_revision_dict.get('ctx_rev', None)
                 if current_ctx_rev != ctx_rev:
-                    repo = hg_util.get_repo_for_repository(self.app,
-                                                           repository=None,
-                                                           repo_path=os.path.abspath(install_dir),
-                                                           create=False)
-                    hg_util.pull_repository(repo, repository_clone_url, current_changeset_revision)
-                    hg_util.update_repository(repo, ctx_rev=current_ctx_rev)
+                    repo_path = os.path.abspath(install_dir)
+                    hg_util.pull_repository(repo_path, repository_clone_url, current_changeset_revision)
+                    hg_util.update_repository(repo_path, ctx_rev=current_ctx_rev)
             self.__handle_repository_contents(tool_shed_repository=tool_shed_repository,
                                               tool_path=tool_path,
                                               repository_clone_url=repository_clone_url,
@@ -902,8 +899,9 @@ class InstallRepositoryManager(object):
                 new_tools = [self.app.toolbox._tools_by_id.get(tool_d['guid'], None) for tool_d in metadata['tools']]
                 new_requirements = set([tool.requirements.packages for tool in new_tools if tool])
                 [self._view.install_dependencies(r) for r in new_requirements]
-                if self.app.config.use_cached_dependency_manager:
-                    [self.app.toolbox.dependency_manager.build_cache(r) for r in new_requirements]
+                dependency_manager = self.app.toolbox.dependency_manager
+                if dependency_manager.cached:
+                    [dependency_manager.build_cache(r) for r in new_requirements]
 
             if install_tool_dependencies and tool_shed_repository.tool_dependencies and 'tool_dependencies' in metadata:
                 work_dir = tempfile.mkdtemp(prefix="tmp-toolshed-itsr")
@@ -995,7 +993,7 @@ class InstallRepositoryManager(object):
         self.install_model.context.flush()
 
     def __assert_can_install_dependencies(self):
-        if self.app.config.tool_dependency_dir is None:
+        if self.app.tool_dependency_dir is None:
             no_tool_dependency_dir_message = "Tool dependencies can be automatically installed only if you set "
             no_tool_dependency_dir_message += "the value of your 'tool_dependency_dir' setting in your Galaxy "
             no_tool_dependency_dir_message += "configuration file (galaxy.ini) and restart your Galaxy server.  "

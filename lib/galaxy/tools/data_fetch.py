@@ -7,20 +7,17 @@ import sys
 import tempfile
 
 import bdbag.bdbag_api
+from six.moves import StringIO
 
 from galaxy.datatypes import sniff
 from galaxy.datatypes.registry import Registry
 from galaxy.datatypes.upload_util import (
-    handle_sniffable_binary_check,
-    handle_unsniffable_binary_check,
+    handle_upload,
     UploadProblemException,
 )
 from galaxy.util import in_directory
-from galaxy.util.checkers import (
-    check_binary,
-    check_html,
-)
 from galaxy.util.compression_utils import CompressedFile
+from galaxy.util.hash_util import HASH_NAMES, memory_bound_hexdigest
 
 DESCRIPTION = """Data Import Script"""
 
@@ -64,16 +61,16 @@ def _fetch_target(upload_config, target):
         items = None
         if elements_from:
             if elements_from == "archive":
-                decompressed_directory = _decompress_target(target_or_item)
+                decompressed_directory = _decompress_target(upload_config, target_or_item)
                 items = _directory_to_items(decompressed_directory)
             elif elements_from == "bagit":
-                _, elements_from_path = _has_src_to_path(target_or_item)
+                _, elements_from_path = _has_src_to_path(upload_config, target_or_item, is_dataset=False)
                 items = _bagit_to_items(elements_from_path)
             elif elements_from == "bagit_archive":
-                decompressed_directory = _decompress_target(target_or_item)
+                decompressed_directory = _decompress_target(upload_config, target_or_item)
                 items = _bagit_to_items(decompressed_directory)
             elif elements_from == "directory":
-                _, elements_from_path = _has_src_to_path(target_or_item)
+                _, elements_from_path = _has_src_to_path(upload_config, target_or_item, is_dataset=False)
                 items = _directory_to_items(elements_from_path)
             else:
                 raise Exception("Unknown elements from type encountered [%s]" % elements_from)
@@ -96,10 +93,23 @@ def _fetch_target(upload_config, target):
     def _resolve_src(item):
         converted_path = None
 
-        name, path = _has_src_to_path(item)
+        name, path = _has_src_to_path(upload_config, item, is_dataset=True)
+        sources = []
+
+        url = item.get("url")
+        if url:
+            sources.append({"source_uri": url})
+        hashes = item.get("hashes", [])
+        for hash_dict in hashes:
+            hash_function = hash_dict.get("hash_function")
+            hash_value = hash_dict.get("hash_value")
+            _handle_hash_validation(upload_config, hash_function, hash_value, path)
+
         dbkey = item.get("dbkey", "?")
         requested_ext = item.get("ext", "auto")
         info = item.get("info", None)
+        created_from_basename = item.get("created_from_basename", None)
+        tags = item.get("tags", [])
         object_id = item.get("object_id", None)
         link_data_only = upload_config.link_data_only
         if "link_data_only" in item:
@@ -107,55 +117,28 @@ def _fetch_target(upload_config, target):
             link_data_only = _link_data_only(item)
         to_posix_lines = upload_config.get_option(item, "to_posix_lines")
         space_to_tab = upload_config.get_option(item, "space_to_tab")
+        auto_decompress = upload_config.get_option(item, "auto_decompress")
         in_place = item.get("in_place", False)
         purge_source = item.get("purge_source", True)
 
-        # Follow upload.py logic but without the auto-decompress logic.
         registry = upload_config.registry
         check_content = upload_config.check_content
-        data_type, ext = None, requested_ext
 
-        is_binary = check_binary(path)
-        if is_binary:
-            data_type, ext = handle_sniffable_binary_check(data_type, ext, path, registry)
-        if data_type is None:
-            root_datatype = registry.get_datatype_by_extension(ext)
-            if getattr(root_datatype, 'compressed', False):
-                data_type = 'compressed archive'
-                ext = ext
-            elif is_binary:
-                data_type, ext = handle_unsniffable_binary_check(
-                    data_type, ext, path, name, is_binary, requested_ext, check_content, registry
-                )
-        if not data_type and check_content and check_html(path):
-            raise UploadProblemException('The uploaded file contains inappropriate HTML content')
+        stdout, ext, datatype, is_binary, converted_path = handle_upload(
+            registry=registry,
+            path=path,
+            requested_ext=requested_ext,
+            name=name,
+            tmp_prefix='data_fetch_upload_',
+            tmp_dir=".",
+            check_content=check_content,
+            link_data_only=link_data_only,
+            in_place=in_place,
+            auto_decompress=auto_decompress,
+            convert_to_posix_lines=to_posix_lines,
+            convert_spaces_to_tabs=space_to_tab,
+        )
 
-        if data_type != 'binary':
-            if not link_data_only:
-                if to_posix_lines:
-                    if space_to_tab:
-                        line_count, converted_path = sniff.convert_newlines_sep2tabs(path, in_place=in_place, tmp_dir=".")
-                    else:
-                        line_count, converted_path = sniff.convert_newlines(path, in_place=in_place, tmp_dir=".")
-                else:
-                    if space_to_tab:
-                        line_count, converted_path = sniff.sep2tabs(path, in_place=in_place, tmp_dir=".")
-
-            if requested_ext == 'auto':
-                ext = sniff.guess_ext(converted_path or path, registry.sniff_order)
-            else:
-                ext = requested_ext
-
-            data_type = ext
-
-        if ext == 'auto' and data_type == 'binary':
-            ext = 'data'
-        if ext == 'auto' and requested_ext:
-            ext = requested_ext
-        if ext == 'auto':
-            ext = 'data'
-
-        datatype = registry.get_datatype_by_extension(ext)
         if link_data_only:
             # Never alter a file that will not be copied to Galaxy's local file store.
             if datatype.dataset_content_needs_grooming(path):
@@ -173,11 +156,15 @@ def _fetch_target(upload_config, target):
             # Groom the dataset content if necessary
             datatype.groom_dataset_content(path)
 
-        rval = {"name": name, "filename": path, "dbkey": dbkey, "ext": ext, "link_data_only": link_data_only}
+        rval = {"name": name, "filename": path, "dbkey": dbkey, "ext": ext, "link_data_only": link_data_only, "sources": sources, "hashes": hashes}
         if info is not None:
             rval["info"] = info
         if object_id is not None:
             rval["object_id"] = object_id
+        if tags:
+            rval["tags"] = tags
+        if created_from_basename:
+            rval["created_from_basename"] = created_from_basename
         return rval
 
     elements = elements_tree_map(_resolve_src, items)
@@ -193,8 +180,8 @@ def _bagit_to_items(directory):
     return items
 
 
-def _decompress_target(target):
-    elements_from_name, elements_from_path = _has_src_to_path(target)
+def _decompress_target(upload_config, target):
+    elements_from_name, elements_from_path = _has_src_to_path(upload_config, target, is_dataset=False)
     temp_directory = tempfile.mkdtemp(prefix=elements_from_name, dir=".")
     decompressed_directory = CompressedFile(elements_from_path).extract(temp_directory)
     return decompressed_directory
@@ -230,21 +217,39 @@ def _directory_to_items(directory):
     return items
 
 
-def _has_src_to_path(item):
+def _has_src_to_path(upload_config, item, is_dataset=False):
     assert "src" in item, item
     src = item.get("src")
     name = item.get("name")
     if src == "url":
         url = item.get("url")
         path = sniff.stream_url_to_file(url)
+        if not is_dataset:
+            # Actual target dataset will validate and put results in dict
+            # that gets passed back to Galaxy.
+            for hash_function in HASH_NAMES:
+                hash_value = item.get(hash_function)
+                if hash_value:
+                    _handle_hash_validation(upload_config, hash_function, hash_value, path)
         if name is None:
             name = url.split("/")[-1]
+    elif src == "pasted":
+        path = sniff.stream_to_file(StringIO(item["paste_content"]))
+        if name is None:
+            name = "Pasted Entry"
     else:
         assert src == "path"
         path = item["path"]
         if name is None:
             name = os.path.basename(path)
     return name, path
+
+
+def _handle_hash_validation(upload_config, hash_function, hash_value, path):
+    if upload_config.validate_hashes:
+        calculated_hash_value = memory_bound_hexdigest(hash_func_name=hash_function, path=path)
+        if calculated_hash_value != hash_value:
+            raise Exception("Failed to validate upload with [%s] - expected [%s] got [%s]" % (hash_function, hash_value, calculated_hash_value))
 
 
 def _arg_parser():
@@ -263,6 +268,8 @@ class UploadConfig(object):
         self.check_content = request.get("check_content" , True)
         self.to_posix_lines = request.get("to_posix_lines", False)
         self.space_to_tab = request.get("space_to_tab", False)
+        self.auto_decompress = request.get("auto_decompress", False)
+        self.validate_hashes = request.get("validate_hashes", False)
         self.link_data_only = _link_data_only(request)
 
         self.__workdir = os.path.abspath(".")

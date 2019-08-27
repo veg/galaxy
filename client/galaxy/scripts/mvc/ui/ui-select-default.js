@@ -1,7 +1,11 @@
 /**
  *  This class creates/wraps a default html select field as backbone class.
  */
+import $ from "jquery";
+import _ from "underscore";
+import Backbone from "backbone";
 import Utils from "utils/utils";
+import { keyedColorScheme } from "utils/color";
 import Buttons from "mvc/ui/ui-buttons";
 var View = Backbone.View.extend({
     initialize: function(options) {
@@ -159,13 +163,16 @@ var View = Backbone.View.extend({
         }
         if (this.model.get("searchable")) {
             this.data2 = [];
+            this.data2index = {};
             _.each(this.data, (option, index) => {
-                this.data2.push({
+                const d = {
                     order: index,
                     id: option.value,
                     text: option.label,
                     tags: option.tags
-                });
+                };
+                this.data2.push(d);
+                this.data2index[d.id] = d;
             });
             if (this.$select.data("select2")) {
                 this.$select.select2("destroy");
@@ -194,20 +201,23 @@ var View = Backbone.View.extend({
                 },
                 formatResult: result => {
                     let extraTagWarning = "";
-                    let filteredTags = _.filter(result.tags, t => this.matched_tags.hasOwnProperty(t));
+                    const filteredTags = _.filter(result.tags, t => this.matched_tags.hasOwnProperty(t));
                     if (filteredTags.length > 5) {
                         extraTagWarning = `&nbsp;<div class="label label-warning">${filteredTags.length -
                             5} more tags</div>`;
                     }
                     return `
                     ${_.escape(result.text)}
-                    <div class="ui-tags">
+                    <div>
                         ${_.reduce(
                             filteredTags.slice(0, 5),
                             (memo, tag) => {
-                                return `${memo}&nbsp;<div class="badge badge-primary badge-tags">${_.escape(
-                                    tag
-                                )}</div>`;
+                                const tagColors = keyedColorScheme(tag.slice(5));
+                                return `${memo}&nbsp;<div style="background-color: ${tagColors.primary}; color: ${
+                                    tagColors.contrasting
+                                }; border: 1px solid ${
+                                    tagColors.darker
+                                }" class="badge badge-primary badge-tags">${_.escape(tag)}</div>`;
                             },
                             ""
                         )}
@@ -340,8 +350,8 @@ var View = Backbone.View.extend({
     },
 
     /** Update available options */
-    update: function(options) {
-        this.model.set("data", options);
+    update: function(input_def) {
+        this.model.set("data", input_def.data);
     },
 
     /** Set the custom onchange callback function */
@@ -372,15 +382,14 @@ var View = Backbone.View.extend({
             if ($.isArray(new_value)) {
                 var val = [];
                 _.each(new_value, v => {
-                    var d = _.findWhere(this.data2, { id: v });
+                    var d = this.data2index[v];
                     if (d) {
                         val.push(d);
                     }
                 });
                 new_value = val;
             } else {
-                var d = _.findWhere(this.data2, { id: new_value });
-                new_value = d;
+                new_value = this.data2index[new_value];
             }
             this.$select.select2("data", new_value);
         } else {

@@ -14,9 +14,13 @@ from galaxy import (
     util,
     web
 )
+from galaxy.managers.visualizations import (
+    VisualizationManager,
+    VisualizationSerializer
+)
 from galaxy.model.item_attrs import UsesAnnotations
-from galaxy.web import _future_expose_api as expose_api
-from galaxy.web.base.controller import (
+from galaxy.web import expose_api
+from galaxy.webapps.base.controller import (
     BaseAPIController,
     SharableMixin,
     UsesVisualizationMixin
@@ -29,6 +33,11 @@ class VisualizationsController(BaseAPIController, UsesVisualizationMixin, Sharab
     """
     RESTful controller for interactions with visualizations.
     """
+
+    def __init__(self, app):
+        super(VisualizationsController, self).__init__(app)
+        self.manager = VisualizationManager(app)
+        self.serializer = VisualizationSerializer(app)
 
     @expose_api
     def index(self, trans, **kwargs):

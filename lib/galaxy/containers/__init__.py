@@ -22,7 +22,7 @@ from six import string_types, with_metaclass
 from six.moves import shlex_quote
 
 from galaxy.exceptions import ContainerCLIError
-from galaxy.util.submodules import submodules
+from galaxy.util.submodules import import_submodules
 
 
 DEFAULT_CONTAINER_TYPE = 'docker'
@@ -138,6 +138,33 @@ class Container(with_metaclass(ABCMeta, object)):
         :returns:   True if ready, else False
         :rtpe:      bool
         """
+
+    def map_port(self, port):
+        """Map a given container port to a host address/port.
+
+        For legacy reasons, if port is ``None``, the first port (if any) will be returned
+
+        :param  port:   Container port to map
+        :type   port:   int
+        :returns:       Mapping to host address/port for given container port
+        :rtype:         :class:`ContainerPort` instance
+        """
+        mapping = None
+        ports = self.ports or []
+        for mapping in ports:
+            if port == mapping.port:
+                return mapping
+            if port is None:
+                log.warning("Container %s (%s): Don't know how to map ports to containers with multiple exposed ports "
+                            "when a specific port is not requested. Arbitrarily choosing first: %s",
+                            self.name, self.id, mapping)
+                return mapping
+        else:
+            if port is None:
+                log.warning("Container %s (%s): No exposed ports found!", self.name, self.id)
+            else:
+                log.warning("Container %s (%s): No mapping found for port: %s", self.name, self.id, port)
+        return None
 
 
 class ContainerInterface(with_metaclass(ABCMeta, object)):
@@ -353,7 +380,7 @@ def parse_containers_config(containers_config_file):
 
 def _get_interface_modules():
     interfaces = []
-    modules = submodules(sys.modules[__name__])
+    modules = import_submodules(sys.modules[__name__])
     for module in modules:
         module_names = [getattr(module, _) for _ in dir(module)]
         classes = [_ for _ in module_names if inspect.isclass(_) and

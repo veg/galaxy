@@ -24,13 +24,12 @@ from galaxy.visualization.data_providers.phyloviz import PhylovizDataProvider
 from galaxy.visualization.genomes import decode_dbkey
 from galaxy.visualization.genomes import GenomeRegion
 from galaxy.visualization.plugins import registry
-from galaxy.web import error
-from galaxy.web.base.controller import (
+from galaxy.web.framework.helpers import grids, time_ago
+from galaxy.webapps.base.controller import (
     BaseUIController,
     SharableMixin,
     UsesVisualizationMixin
 )
-from galaxy.web.framework.helpers import grids, time_ago
 
 log = logging.getLogger(__name__)
 
@@ -182,7 +181,7 @@ class VisualizationListGrid(grids.Grid):
         grids.GridOperation("Open", allow_multiple=False, url_args=get_url_args),
         grids.GridOperation("Edit Attributes", allow_multiple=False, url_args=dict(controller="", action='visualizations/edit')),
         grids.GridOperation("Copy", allow_multiple=False, condition=(lambda item: not item.deleted)),
-        grids.GridOperation("Share or Publish", allow_multiple=False, condition=(lambda item: not item.deleted), url_args=dict(action='sharing')),
+        grids.GridOperation("Share or Publish", allow_multiple=False, condition=(lambda item: not item.deleted), url_args=dict(controller="", action="visualizations/sharing")),
         grids.GridOperation("Delete", condition=(lambda item: not item.deleted), confirm="Are you sure you want to delete this visualization?"),
     ]
 
@@ -271,7 +270,7 @@ class VisualizationController(BaseUIController, SharableMixin, UsesVisualization
         grid['shared_by_others'] = self._get_shared(trans)
         return grid
 
-    @web.expose_api
+    @web.legacy_expose_api
     @web.require_login("use Galaxy visualizations", use_panels=True)
     def list(self, trans, **kwargs):
         message = kwargs.get('message')
@@ -407,41 +406,6 @@ class VisualizationController(BaseUIController, SharableMixin, UsesVisualization
 
     @web.expose
     @web.require_login("share Galaxy visualizations")
-    def sharing(self, trans, id, **kwargs):
-        """ Handle visualization sharing. """
-
-        # Get session and visualization.
-        session = trans.sa_session
-        visualization = self.get_visualization(trans, id, check_ownership=True)
-
-        # Do operation on visualization.
-        if 'make_accessible_via_link' in kwargs:
-            self._make_item_accessible(trans.sa_session, visualization)
-        elif 'make_accessible_and_publish' in kwargs:
-            self._make_item_accessible(trans.sa_session, visualization)
-            visualization.published = True
-        elif 'publish' in kwargs:
-            visualization.published = True
-        elif 'disable_link_access' in kwargs:
-            visualization.importable = False
-        elif 'unpublish' in kwargs:
-            visualization.published = False
-        elif 'disable_link_access_and_unpublish' in kwargs:
-            visualization.importable = visualization.published = False
-        elif 'unshare_user' in kwargs:
-            user = session.query(model.User).get(self.decode_id(kwargs['unshare_user']))
-            if not user:
-                error("User not found for provided id")
-            association = session.query(model.VisualizationUserShareAssociation) \
-                                 .filter_by(user=user, visualization=visualization).one()
-            session.delete(association)
-
-        session.flush()
-
-        return trans.fill_template("/sharing_base.mako", item=visualization, controller_list='visualizations', use_panels=True)
-
-    @web.expose
-    @web.require_login("share Galaxy visualizations")
     def share(self, trans, id=None, email="", use_panels=False):
         """ Handle sharing a visualization with a particular user. """
         msg = mtype = None
@@ -472,7 +436,7 @@ class VisualizationController(BaseUIController, SharableMixin, UsesVisualization
                 viz_title = escape(visualization.title)
                 other_email = escape(other.email)
                 trans.set_message("Visualization '%s' shared with user '%s'" % (viz_title, other_email))
-                return trans.response.send_redirect(web.url_for(controller='visualization', action='sharing', id=id))
+                return trans.response.send_redirect(web.url_for("/visualizations/sharing?id=%s" % id))
         return trans.fill_template("/ind_share_base.mako",
                                    message=msg,
                                    messagetype=mtype,
@@ -563,7 +527,7 @@ class VisualizationController(BaseUIController, SharableMixin, UsesVisualization
         vis_annotation = annotation or vis_config.get('annotation', None)
         return self.save_visualization(trans, vis_config, vis_type, vis_id, vis_title, vis_dbkey, vis_annotation)
 
-    @web.expose_api
+    @web.legacy_expose_api
     @web.require_login("edit visualizations")
     def edit(self, trans, payload=None, **kwd):
         """
@@ -659,7 +623,7 @@ class VisualizationController(BaseUIController, SharableMixin, UsesVisualization
         """
         log.exception('error rendering visualization (%s)', visualization_name)
         if trans.debug:
-            raise
+            raise exception
         return trans.show_error_message(
             "There was an error rendering the visualization. " +
             "Contact your Galaxy administrator if the problem persists." +

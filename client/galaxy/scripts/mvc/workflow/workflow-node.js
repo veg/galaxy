@@ -1,5 +1,13 @@
+import _ from "underscore";
+import $ from "jquery";
+import Backbone from "backbone";
+import { getAppRoot } from "onload/loadConfig";
 import Utils from "utils/utils";
 import NodeView from "mvc/workflow/workflow-view-node";
+
+// unused
+//var StepParameterTypes = ["text", "integer", "float", "boolean", "color"];
+
 var Node = Backbone.Model.extend({
     initialize: function(app, attr) {
         this.app = app;
@@ -19,7 +27,8 @@ var Node = Backbone.Model.extend({
     },
     removeWorkflowOutput: function(outputName) {
         while (this.isWorkflowOutput(outputName)) {
-            this.workflow_outputs.splice(this.getWorkflowOutput(outputName), 1);
+            const target = this.getWorkflowOutput(outputName);
+            this.workflow_outputs.splice(_.indexOf(this.workflow_outputs, target), 1);
         }
     },
     addWorkflowOutput: function(outputName, label) {
@@ -50,6 +59,23 @@ var Node = Backbone.Model.extend({
             this.nodeView.redrawWorkflowOutputs();
         }
         return changed;
+    },
+    changeOutputDatatype: function(outputName, datatype) {
+        const output_terminal = this.output_terminals[outputName];
+        const output = this.nodeView.outputViews[outputName].output;
+        output_terminal.force_datatype = datatype;
+        output.force_datatype = datatype;
+        if (datatype) {
+            this.post_job_actions["ChangeDatatypeAction" + outputName] = {
+                action_arguments: { newtype: datatype },
+                action_type: "ChangeDatatypeAction",
+                output_name: outputName
+            };
+        } else {
+            delete this.post_job_actions["ChangeDatatypeAction" + outputName];
+        }
+        this.markChanged();
+        output_terminal.destroyInvalidConnections();
     },
     connectedOutputTerminals: function() {
         return this._connectedTerminals(this.output_terminals);
@@ -141,11 +167,11 @@ var Node = Backbone.Model.extend({
 
         Utils.request({
             type: "POST",
-            url: `${Galaxy.root}api/workflows/build_module`,
+            url: `${getAppRoot()}api/workflows/build_module`,
             data: {
                 type: this.type,
                 tool_id: this.content_id,
-                inputs: this.tool_state
+                tool_state: this.tool_state
             },
             success: data => {
                 var newData = Object.assign({}, data, copiedData);
@@ -185,7 +211,9 @@ var Node = Backbone.Model.extend({
             this.content_id = this.config_form.id;
         }
     },
+
     init_field_data: function(data) {
+        //console.debug("init_field_data: ", data);
         if (data.type) {
             this.type = data.type;
         }
@@ -206,13 +234,14 @@ var Node = Backbone.Model.extend({
             node: node
         });
         node.nodeView = nodeView;
-        $.each(data.data_inputs, (i, input) => {
+        $.each(data.inputs, (i, input) => {
             nodeView.addDataInput(input);
         });
-        if (data.data_inputs.length > 0 && data.data_outputs.length > 0) {
+
+        if (data.inputs.length > 0 && data.outputs.length > 0) {
             nodeView.addRule();
         }
-        $.each(data.data_outputs, (i, output) => {
+        $.each(data.outputs, (i, output) => {
             nodeView.addDataOutput(output);
         });
         nodeView.render();
@@ -221,7 +250,7 @@ var Node = Backbone.Model.extend({
     update_field_data: function(data) {
         var node = this;
         var nodeView = node.nodeView;
-        // remove unused output views and remove pre-existing output views from data.data_outputs,
+        // remove unused output views and remove pre-existing output views from data.outputs,
         // so that these are not added twice.
         var unused_outputs = [];
         // nodeView.outputViews contains pre-existing outputs,
@@ -229,7 +258,7 @@ var Node = Backbone.Model.extend({
         // Now we gather the unused outputs
         $.each(nodeView.outputViews, (i, output_view) => {
             var cur_name = output_view.output.name;
-            var data_names = data.data_outputs;
+            var data_names = data.outputs;
             var cur_name_in_data_outputs = false;
             _.each(data_names, data_name => {
                 if (data_name.name == cur_name) {
@@ -257,13 +286,17 @@ var Node = Backbone.Model.extend({
                 node.workflow_outputs.splice(i, 1); // removes output from list of workflow outputs
             }
         });
-        $.each(data.data_outputs, (i, output) => {
+        $.each(data.outputs, (i, output) => {
             if (!nodeView.outputViews[output.name]) {
                 nodeView.addDataOutput(output); // add data output if it does not yet exist
             } else {
                 // the output already exists, but the output formats may have changed.
                 // Therefore we update the datatypes and destroy invalid connections.
                 node.output_terminals[output.name].datatypes = output.extensions;
+                node.output_terminals[output.name].force_datatype = output.force_datatype;
+                if (node.type == "parameter_input") {
+                    node.output_terminals[output.name].attributes.type = output.type;
+                }
                 node.output_terminals[output.name].destroyInvalidConnections();
             }
         });
@@ -283,9 +316,8 @@ var Node = Backbone.Model.extend({
         var old_body = nodeView.$("div.inputs");
         var new_body = nodeView.newInputsDiv();
         var newTerminalViews = {};
-        _.each(data.data_inputs, input => {
-            var terminalView = node.nodeView.addDataInput(input, new_body);
-            newTerminalViews[input.name] = terminalView;
+        _.each(data.inputs, input => {
+            newTerminalViews[input.name] = node.nodeView.addDataInput(input, new_body);
         });
         // Cleanup any leftover terminals
         _.each(_.difference(_.values(nodeView.terminalViews), _.values(newTerminalViews)), unusedView => {
@@ -297,8 +329,9 @@ var Node = Backbone.Model.extend({
         // type (not really valid right?) but adding special logic here for
         // data collection input parameters that can have their collection
         // change.
-        if (data.data_outputs.length == 1 && "collection_type" in data.data_outputs[0]) {
-            nodeView.updateDataOutput(data.data_outputs[0]);
+        var data_outputs = data.outputs;
+        if (data_outputs.length == 1 && "collection_type" in data_outputs[0]) {
+            nodeView.updateDataOutput(data_outputs[0]);
         }
         old_body.replaceWith(new_body);
         if ("workflow_outputs" in data) {

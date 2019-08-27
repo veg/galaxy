@@ -7,6 +7,8 @@ import logging
 
 from sqlalchemy import Column, ForeignKey, Integer, MetaData, Table, TEXT, VARCHAR
 
+from galaxy.model.custom_types import JSONType
+
 log = logging.getLogger(__name__)
 metadata = MetaData()
 
@@ -51,7 +53,7 @@ oidc_user_authnz_tokens = Table(
     Column('user_id', Integer, ForeignKey("galaxy_user.id"), index=True),
     Column('uid', VARCHAR(255)),
     Column('provider', VARCHAR(32)),
-    Column('extra_data', TEXT),
+    Column('extra_data', JSONType, nullable=True),
     Column('lifetime', Integer),
     Column('assoc_type', VARCHAR(64)))
 
@@ -67,8 +69,8 @@ def upgrade(migrate_engine):
         psa_nonce.create()
         psa_partial.create()
         oidc_user_authnz_tokens.create()
-    except Exception as e:
-        log.exception("Creating OIDC table failed: %s" % str(e))
+    except Exception:
+        log.exception("Creating OIDC table failed")
 
 
 def downgrade(migrate_engine):
@@ -81,5 +83,5 @@ def downgrade(migrate_engine):
         psa_nonce.drop()
         psa_partial.drop()
         oidc_user_authnz_tokens.drop()
-    except Exception as e:
-        log.exception("Dropping OIDC table failed: %s" % str(e))
+    except Exception:
+        log.exception("Dropping OIDC table failed")

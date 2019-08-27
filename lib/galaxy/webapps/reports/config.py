@@ -48,9 +48,18 @@ class Configuration(object):
         self.blog_url = kwargs.get('blog_url', None)
         self.screencasts_url = kwargs.get('screencasts_url', None)
         self.log_events = False
-        self.cookie_path = kwargs.get("cookie_path", "/")
+        self.cookie_path = kwargs.get("cookie_path", None)
         # Error logging with sentry
         self.sentry_dsn = kwargs.get('sentry_dsn', None)
+
+        # Security/Policy Compliance
+        self.redact_username_in_logs = False
+        self.redact_email_in_job_name = False
+        self.enable_beta_gdpr = string_as_bool(kwargs.get("enable_beta_gdpr", False))
+        if self.enable_beta_gdpr:
+            self.redact_username_in_logs = True
+            self.redact_email_in_job_name = True
+            self.allow_user_deletion = True
 
     def get(self, key, default):
         return self.config_dict.get(key, default)

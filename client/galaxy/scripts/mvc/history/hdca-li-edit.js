@@ -1,6 +1,7 @@
+import $ from "jquery";
+import _ from "underscore";
 import HDCA_LI from "mvc/history/hdca-li";
 import DC_VIEW_EDIT from "mvc/collection/collection-view-edit";
-import faIconButton from "ui/fa-icon-button";
 import _l from "utils/localization";
 
 //==============================================================================
@@ -38,23 +39,19 @@ var HDCAListItemEdit = _super.extend(
                     <a class="delete-btn icon-btn" title="${_l("Delete")}" data-toggle="dropdown">
                         <span class="fa fa-times"></span>
                     </a>
-                    <ul class="dropdown-menu float-right" role="menu">
-                        <li>
-                            <a href="#" class="delete-collection">
+                    <div class="dropdown-menu" role="menu">
+                            <a href="javascript:void(0)" role="button" class="dropdown-item delete-collection">
                                 ${_l("Collection Only")}
                             </a>
-                        </li>
-                        <li>
-                            <a href="#" class="delete-collection-and-datasets">
+                            <a href="javascript:void(0)" role="button" class="dropdown-item delete-collection-and-datasets">
                                 ${_l("Delete Datasets")}
                             </a>
-                        </li>
-                        <li style="display: ${this.purgeAllowed ? "inherit" : "none"}">
-                            <a href="#" class="delete-collection-and-purge-datasets">
+                            <a href="javascript:void(0)" role="button" style="display: ${
+                                this.purgeAllowed ? "inherit" : "none"
+                            }" class="dropdown-item delete-collection-and-purge-datasets">
                                 ${_l("Permanently Delete Datasets")}
                             </a>
-                        </li>
-                    </ul>
+                    </div>
                 </div>`);
         },
 

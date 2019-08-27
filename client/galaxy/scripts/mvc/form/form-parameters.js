@@ -1,13 +1,18 @@
 /**
     This class creates input elements. New input parameter types should be added to the types dictionary.
 */
+import $ from "jquery";
+import Backbone from "backbone";
+import { getGalaxyInstance } from "app";
 import Utils from "utils/utils";
 import Ui from "mvc/ui/ui-misc";
 import SelectContent from "mvc/ui/ui-select-content";
 import SelectLibrary from "mvc/ui/ui-select-library";
 import SelectFtp from "mvc/ui/ui-select-ftp";
 import SelectGenomeSpace from "mvc/ui/ui-select-genomespace";
+import RulesEdit from "mvc/ui/ui-rules-edit";
 import ColorPicker from "mvc/ui/ui-color-picker";
+
 // create form view
 export default Backbone.Model.extend({
     /** Available parameter types */
@@ -24,17 +29,20 @@ export default Backbone.Model.extend({
         boolean: "_fieldBoolean",
         drill_down: "_fieldDrilldown",
         color: "_fieldColor",
+        group_tag: "_fieldSelect",
         hidden: "_fieldHidden",
         hidden_data: "_fieldHidden",
         baseurl: "_fieldHidden",
         library_data: "_fieldLibrary",
         ftpfile: "_fieldFtp",
         upload: "_fieldUpload",
+        rules: "_fieldRulesEdit",
         genomespacefile: "_fieldGenomeSpace"
     },
 
     /** Returns an input field for a given field type */
     create: function(input_def) {
+        const Galaxy = getGalaxyInstance();
         var fieldClass = this.types[input_def.type];
         var field = typeof this[fieldClass] === "function" ? this[fieldClass].call(this, input_def) : null;
         if (!field) {
@@ -74,15 +82,6 @@ export default Backbone.Model.extend({
             input_def.error_text = "Missing columns in referenced dataset.";
         }
 
-        // identify available options
-        var data = input_def.data;
-        if (!data) {
-            data = [];
-            _.each(input_def.options, option => {
-                data.push({ label: option[0], value: option[1] });
-            });
-        }
-
         // pick selection display
         var classes = {
             checkboxes: Ui.Checkbox,
@@ -90,9 +89,10 @@ export default Backbone.Model.extend({
             radiobutton: Ui.RadioButton
         };
         var SelectClass = classes[input_def.display] || Ui.Select;
-        var select = new SelectClass.View({
+        return new Ui.TextSelect({
             id: `field-${input_def.id}`,
-            data: data,
+            data: input_def.data,
+            options: input_def.options,
             display: input_def.display,
             error_text: input_def.error_text || "No options available",
             readonly: input_def.readonly,
@@ -100,9 +100,10 @@ export default Backbone.Model.extend({
             optional: input_def.optional,
             onchange: input_def.onchange,
             individual: input_def.individual,
-            searchable: input_def.flavor !== "workflow"
+            searchable: input_def.flavor !== "workflow",
+            textable: input_def.textable,
+            SelectClass: SelectClass
         });
-        return input_def.textable ? new Ui.TextSelect({ select: select }) : select;
     },
 
     /** Drill down options field */
@@ -125,7 +126,7 @@ export default Backbone.Model.extend({
     /** Text input field */
     _fieldText: function(input_def) {
         // field replaces e.g. a select field
-        if (input_def.options && input_def.data) {
+        if (input_def.model_class === "SelectTagParameter" || (input_def.options && input_def.data)) {
             input_def.area = input_def.multiple;
             if (Utils.isEmpty(input_def.value)) {
                 input_def.value = null;
@@ -215,10 +216,17 @@ export default Backbone.Model.extend({
     /** GenomeSpace file select field
      */
     _fieldGenomeSpace: function(input_def) {
-        var self = this;
         return new SelectGenomeSpace.View({
             id: `field-${input_def.id}`,
             onchange: input_def.onchange
+        });
+    },
+
+    _fieldRulesEdit: function(input_def) {
+        return new RulesEdit.View({
+            id: `field-${input_def.id}`,
+            onchange: input_def.onchange,
+            target: input_def.target
         });
     },
 

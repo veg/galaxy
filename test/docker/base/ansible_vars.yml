@@ -3,7 +3,7 @@ add_system_users: no
 galaxyFS_base_dir: /opt/galaxy
 # TODO: use GALAXY_ROOT via cmd line instead
 galaxy_server_dir: "/galaxy"
-galaxy_venv_dir: "{{ galaxyFS_base_dir }}/.venv"
+galaxy_venv_dir: "/galaxy_venv"
 galaxy_vcs: git
 galaxy_git_repo: https://github.com/galaxyproject/galaxy.git
 galaxy_changeset_id: dev
@@ -19,10 +19,12 @@ galaxy_config_file: "{{ galaxy_server_dir }}/config/galaxy.ini"
 configure_docker: no
 postgresql_bin_dir: /usr/lib/postgresql/9.5/bin
 galaxy_manage_database: no
-
+# avoid some packages unneeded packages install by ansible-galaxy-os
+install_maintainance_packages: false
 galaxy_user_name: "root"
 galaxy_extras_install_packages: true
 galaxy_job_conf_path: "/etc/galaxy/job_conf.xml"
+galaxy_build_client: no
 
 galaxy_web_processes: 1
 galaxy_handler_processes: 2

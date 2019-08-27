@@ -44,11 +44,13 @@ ie_request.launch(
 # Access URLs for the notebook from within galaxy.
 notebook_access_url = ie_request.url_template('${PROXY_URL}/ipython/notebooks/ipython_galaxy_notebook.ipynb')
 notebook_login_url = ie_request.url_template('${PROXY_URL}/ipython/login?next=${PROXY_PREFIX}%2Fipython%2Ftree')
+notebook_keepalive_url = ie_request.url_template('${PROXY_URL}/ipython/tree')
 
 %>
 <html>
 <head>
 ${ ie.load_default_js() }
+${ ie.load_default_app() }
 </head>
 <body>
 
@@ -56,16 +58,11 @@ ${ ie.load_default_js() }
 ${ ie.default_javascript_variables() }
 var notebook_login_url = '${ notebook_login_url }';
 var notebook_access_url = '${ notebook_access_url }';
-${ ie.plugin_require_config() }
+var notebook_keepalive_url = '${ notebook_keepalive_url }';
 
 // Load notebook
-
-requirejs(['galaxy.interactive_environments', 'plugin/jupyter'], function(IES){
-    // This global is not awesome, get rid of it when possible (when IES are a part of the build process)
-    window.IES = IES;
-    IES.load_when_ready(ie_readiness_url, function(){
-        load_notebook(ie_password, notebook_login_url, notebook_access_url);
-    });
+IES.load_when_ready(ie_readiness_url, function(){
+    load_notebook(ie_password, notebook_login_url, notebook_access_url);
 });
 
 

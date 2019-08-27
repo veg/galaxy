@@ -1,19 +1,21 @@
+import _ from "underscore";
+import jQuery from "jquery";
+import { getGalaxyInstance } from "app";
 import HISTORY_VIEW from "mvc/history/history-view";
-import HISTORY_CONTENTS from "mvc/history/history-contents";
-import STATES from "mvc/dataset/states";
 import HDA_MODEL from "mvc/history/hda-model";
 import HDA_LI_EDIT from "mvc/history/hda-li-edit";
 import HDCA_LI_EDIT from "mvc/history/hdca-li-edit";
-import TAGS from "mvc/tag";
+import { mountModelTags } from "components/Tags";
 import ANNOTATIONS from "mvc/annotation";
 import LIST_COLLECTION_CREATOR from "mvc/collection/list-collection-creator";
 import PAIR_COLLECTION_CREATOR from "mvc/collection/pair-collection-creator";
 import LIST_OF_PAIRS_COLLECTION_CREATOR from "mvc/collection/list-of-pairs-collection-creator";
 import faIconButton from "ui/fa-icon-button";
-import PopupMenu from "mvc/ui/popup-menu";
 import BASE_MVC from "mvc/base-mvc";
 import _l from "utils/localization";
 import "ui/editable-text";
+
+var $ = jQuery;
 
 /* =============================================================================
 TODO:
@@ -113,6 +115,8 @@ var HistoryViewEdit = _super.extend(
         // ------------------------------------------------------------------------ panel rendering
         /** In this override, add tag and annotation editors and a btn to toggle the selectors */
         _buildNewRender: function() {
+            var Galaxy = getGalaxyInstance();
+
             // create a new render using a skeleton template, render title buttons, render body, and set up events, etc.
             var $newRender = _super.prototype._buildNewRender.call(this);
             if (!this.model) {
@@ -151,27 +155,31 @@ var HistoryViewEdit = _super.extend(
 
         /** render the tags sub-view controller */
         _renderTags: function($where) {
-            var panel = this;
-            this.tagsEditor = new TAGS.TagsEditor({
+            const el = $where.find(".controls .tags-display")[0];
+
+            const propsData = {
                 model: this.model,
-                el: $where.find(".controls .tags-display"),
-                onshowFirstTime: function() {
-                    this.render();
-                },
-                // show hide sub-view tag editors when this is shown/hidden
-                onshow: function() {
-                    panel.toggleHDATagEditors(true, panel.fxSpeed);
-                },
-                onhide: function() {
-                    panel.toggleHDATagEditors(false, panel.fxSpeed);
-                },
-                $activator: faIconButton({
-                    title: _l("Edit history tags"),
-                    classes: "history-tag-btn",
-                    faIcon: "fa-tags"
-                }).appendTo($where.find(".controls .actions"))
+                disabled: false,
+                context: "history-view-edit"
+            };
+
+            const vm = mountModelTags(propsData, el);
+
+            // tag icon button open/closes
+            const activator = faIconButton({
+                title: _l("Edit history tags"),
+                classes: "history-tag-btn",
+                faIcon: "fa-tags",
+                tooltipConfig: { placement: "top" }
+            }).appendTo($where.find(".controls .actions"));
+
+            activator.on("click", () => {
+                $(vm.$el).toggleClass("active");
             });
+
+            return vm;
         },
+
         /** render the annotation sub-view controller */
         _renderAnnotation: function($where) {
             var panel = this;
@@ -191,7 +199,8 @@ var HistoryViewEdit = _super.extend(
                 $activator: faIconButton({
                     title: _l("Edit history annotation"),
                     classes: "history-annotate-btn",
-                    faIcon: "fa-comment"
+                    faIcon: "fa-comment",
+                    tooltipConfig: { placement: "top" }
                 }).appendTo($where.find(".controls .actions"))
             });
         },
@@ -200,6 +209,8 @@ var HistoryViewEdit = _super.extend(
          *  In this override, make the name editable
          */
         _setUpBehaviors: function($where) {
+            var Galaxy = getGalaxyInstance();
+
             $where = $where || this.$el;
             _super.prototype._setUpBehaviors.call(this, $where);
             if (!this.model) {
@@ -236,35 +247,76 @@ var HistoryViewEdit = _super.extend(
          *  ajax calls made for multiple datasets are queued
          */
         multiselectActions: function() {
+            var Galaxy = getGalaxyInstance();
             var panel = this;
+
+            const batchUpdate = (key, value) => {
+                const actionModels = {};
+                const items = panel
+                    .getSelectedModels()
+                    .filter(model => {
+                        console.log(model.attributes[key]);
+                        return model.attributes[key] != value;
+                    })
+                    .map(model => {
+                        const res = {
+                            history_content_type: model.attributes.history_content_type,
+                            id: model.attributes.id
+                        };
+                        actionModels[model.id] = model;
+                        // Tried "optimistically" deleting the dataset - but it didn't quite work -
+                        // maybe history polling restored the previous state?
+                        return res;
+                    });
+
+                if (items.length == 0) {
+                    return;
+                }
+
+                const options = {};
+                options.url = `${Galaxy.root}api/histories/${this.model.id}/contents`;
+                options.type = "PUT";
+                const requestData = { items: items };
+                requestData[key] = value;
+                options.data = JSON.stringify(requestData);
+                options.contentType = "application/json";
+
+                var xhr = jQuery.ajax(options);
+                xhr.done((message, status, responseObj) => {
+                    for (const updated of message) {
+                        const typeId = updated.history_content_type + "-" + updated.id;
+                        actionModels[typeId].set(updated);
+                    }
+                });
+                xhr.fail((xhr, status, message) => {
+                    console.error(message);
+                });
+                return xhr;
+            };
 
             var actions = [
                 {
                     html: _l("Hide datasets"),
                     func: function() {
-                        var action = HDA_MODEL.HistoryDatasetAssociation.prototype.hide;
-                        panel.getSelectedModels().ajaxQueue(action);
+                        batchUpdate("visible", false);
                     }
                 },
                 {
                     html: _l("Unhide datasets"),
                     func: function() {
-                        var action = HDA_MODEL.HistoryDatasetAssociation.prototype.unhide;
-                        panel.getSelectedModels().ajaxQueue(action);
+                        batchUpdate("visible", true);
                     }
                 },
                 {
                     html: _l("Delete datasets"),
-                    func: function() {
-                        var action = HDA_MODEL.HistoryDatasetAssociation.prototype["delete"];
-                        panel.getSelectedModels().ajaxQueue(action);
+                    func: () => {
+                        batchUpdate("deleted", true);
                     }
                 },
                 {
                     html: _l("Undelete datasets"),
                     func: function() {
-                        var action = HDA_MODEL.HistoryDatasetAssociation.prototype.undelete;
-                        panel.getSelectedModels().ajaxQueue(action);
+                        batchUpdate("deleted", false);
                     }
                 }
             ];
@@ -273,7 +325,9 @@ var HistoryViewEdit = _super.extend(
                 actions.push({
                     html: _l("Permanently delete datasets"),
                     func: function() {
-                        if (confirm(_l("This will permanently remove the data in your datasets. Are you sure?"))) {
+                        if (
+                            window.confirm(_l("This will permanently remove the data in your datasets. Are you sure?"))
+                        ) {
                             var action = HDA_MODEL.HistoryDatasetAssociation.prototype.purge;
                             const historyContents = panel.getSelectedModels();
                             const selectedDatasets = historyContents.filter(
@@ -314,8 +368,8 @@ var HistoryViewEdit = _super.extend(
 
         buildCollection: function(collectionType, selection, hideSourceItems) {
             var panel = this;
-            var selection = selection || panel.getSelectedModels();
-            var hideSourceItems = hideSourceItems || false;
+            selection = selection || panel.getSelectedModels();
+            hideSourceItems = hideSourceItems || false;
             var createFunc;
             if (collectionType == "list") {
                 createFunc = LIST_COLLECTION_CREATOR.createListCollection;
@@ -328,7 +382,7 @@ var HistoryViewEdit = _super.extend(
             } else {
                 console.warn(`Unknown collectionType encountered ${collectionType}`);
             }
-            createFunc(selection, hideSourceItems).done(() => {
+            createFunc(selection, hideSourceItems).then(() => {
                 panel.model.refresh();
             });
         },
@@ -408,13 +462,13 @@ var HistoryViewEdit = _super.extend(
         },
 
         /** toggle the visibility of each content's tagsEditor applying all the args sent to this function */
-        toggleHDATagEditors: function(showOrHide, speed) {
-            _.each(this.views, view => {
-                if (view.tagsEditor) {
-                    view.tagsEditor.toggle(showOrHide, speed);
-                }
-            });
-        },
+        // toggleHDATagEditors: function(showOrHide, speed) {
+        //     _.each(this.views, view => {
+        //         if (view.tagsEditor) {
+        //             view.tagsEditor.toggle(showOrHide, speed);
+        //         }
+        //     });
+        // },
 
         /** toggle the visibility of each content's annotationEditor applying all the args sent to this function */
         toggleHDAAnnotationEditors: function(showOrHide, speed) {
@@ -473,8 +527,7 @@ var HistoryViewEdit = _super.extend(
             this.$list().before([this._renderDropTargetHelp(), $dropTarget]);
             for (var evName in dropHandlers) {
                 if (dropHandlers.hasOwnProperty(evName)) {
-                    //console.debug( evName, dropHandlers[ evName ] );
-                    $dropTarget.on(evName, dropHandlers[evName]);
+                    $dropTarget.get(0).addEventListener(evName, dropHandlers[evName]);
                 }
             }
             return this;
@@ -541,31 +594,28 @@ var HistoryViewEdit = _super.extend(
         drop: function(ev) {
             ev.preventDefault();
             //ev.stopPropagation();
-
-            var self = this;
-            var dataTransfer = ev.originalEvent.dataTransfer;
+            var dataTransfer = ev.dataTransfer;
             var data = dataTransfer.getData("text");
 
             dataTransfer.dropEffect = "move";
             try {
                 data = JSON.parse(data);
             } catch (err) {
-                self.warn("error parsing JSON from drop:", data);
+                this.warn("error parsing JSON from drop:", data);
             }
 
-            self.trigger("droptarget:drop", ev, data, self);
+            this.trigger("droptarget:drop", ev, data, this);
             return false;
         },
 
         /** handler that copies data into the contents */
         dataDropped: function(data) {
-            var self = this;
             // HDA: dropping will copy it to the history
             if (_.isObject(data) && data.model_class === "HistoryDatasetAssociation" && data.id) {
-                if (self.contents.currentPage !== 0) {
-                    return self.contents.fetchPage(0).then(() => self.model.contents.copy(data.id));
+                if (this.contents.currentPage !== 0) {
+                    return this.contents.fetchPage(0).then(() => this.model.contents.copy(data.id));
                 }
-                return self.model.contents.copy(data.id);
+                return this.model.contents.copy(data.id);
             }
             return jQuery.when();
         },
